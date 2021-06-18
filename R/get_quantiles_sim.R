@@ -6,7 +6,7 @@
 #' @author SH
 #'
 #'
-#' @aliases get_quantiles
+#' @aliases get_quantiles_sim
 #'
 #' @export
 #'
