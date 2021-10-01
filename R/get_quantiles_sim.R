@@ -32,11 +32,12 @@
 # d_type = "temporal"
 # d_type = "spatial"
 # n = 10000
-# rrpi = 1
+# rrpi = 0.6
 # si_log_mean = LN_mean
 # si_log_sd = LN_SD
 # q = quants
 # dist_ray = rayleigh_scale
+# params = c(si_mean, si_sd)
 
 
 ## Main function to compute the quantiles
