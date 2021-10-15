@@ -82,7 +82,7 @@ LN_SD <- sqrt(log(1 + si_sd^2/si_mean^2))
 
 
 f_temporal <- fpaircase(type = "empiric", p = dlnorm(x = date_vect, meanlog = LN_mean, 
-                                                     sdlog = LN_SD, log = FALSE))
+                                                     sdlog = LN_SD, log = FALSE), alpha = 0.00001)
 f_spatial <- fpaircase(type = "spatial", sd_spatial = rayleigh_scale)
 
 # Plots of the distributions
@@ -193,7 +193,7 @@ for(i in 1:length(pi_range)){
 }
 tictoc::toc()
 #write.csv(si_table_vimes_ln, "tests_sh/vimes_si_ln.csv")
-
+#write.csv(si_table_vimes_ln, "tests_sh/vimes_si_ln_imp_alpha.csv")
 
 
 

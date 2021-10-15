@@ -11,6 +11,8 @@ library(dplyr)
 
 # Read in the vimes results.
 vimes_gamma <- read.csv("tests_sh/vimes_si_gamma.csv", row.names = 1, check.names = F)
+vimes_gamma <- read.csv("tests_sh/vimes_si_gamma_imp_alpha.csv", row.names = 1, check.names = F)
+
 
 # Bring in the data we are going to use for the simulations
 
@@ -262,6 +264,6 @@ IQR75_10mil_gamma <- plyr::aaply(plyr::laply(comp_10mil, as.matrix), c(2, 3), fu
 
 Box_10mil_gamma <- plyr::aaply(plyr::laply(comp_10mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
 
-write.csv(medians_10mil_gamma, "tests_sh/comp_gamma_10mil_medians.csv")
-write.csv(IQR25_10mil_gamma, "tests_sh/comp_gamma_10mil_IQR25.csv")
-write.csv(IQR75_10mil_gamma, "tests_sh/comp_gamma_10mil_IQR75.csv")
+#write.csv(medians_10mil_gamma, "tests_sh/comp_gamma_10mil_medians.csv")
+#write.csv(IQR25_10mil_gamma, "tests_sh/comp_gamma_10mil_IQR25.csv")
+#write.csv(IQR75_10mil_gamma, "tests_sh/comp_gamma_10mil_IQR75.csv")

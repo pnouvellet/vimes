@@ -77,9 +77,12 @@ max(D_dates)
 date_vect <- seq(0,max(D_dates), 1)
 
 
-f_temporal <- fpaircase(type = "temporal", gamma_shape = gam_parms[[1]], gamma_scale = gam_parms[[2]])
+f_temporal <- fpaircase(type = "temporal", gamma_shape = gam_parms[[1]], gamma_scale = gam_parms[[2]], 
+                        alpha = 0.00001) # alpha sets the level that is used within get_max_kappa.
+# get_max_kappa sets the number of generations that are considered. higher alpha means that more potential 
+# generations are taken into account 
 
-f_spatial <- fpaircase(type = "spatial", sd_spatial = rayleigh_scale)
+f_spatial <- fpaircase(type = "spatial", sd_spatial = rayleigh_scale, alpha = 0.00001)
 
 # Plots of the distributions
 par(mfrow=c(2,1))
@@ -188,9 +191,11 @@ for(i in 1:length(pi_range)){
   }
 tictoc::toc()
 
-#write.csv(si_table_vimes_gamma, "tests_sh/vimes_si_gamma.csv")
-
+#write.csv(si_table_vimes_gamma, "tests_sh/vimes_si_gamma.csv") # with the precision at 0.00001 but default for alpha (0.001)
+#write.csv(si_table_vimes_gamma, "tests_sh/vimes_si_gamma_imp_alpha.csv") #precision as above but alpha at 0.00001
 # Produce a table for the distance kernel
+
+# These are profoundly different! 
 
 dist_table_vimes <- as.data.frame(matrix(nrow = length(pi_range), ncol = length(q)))
 colnames(dist_table_vimes) <- q
@@ -204,3 +209,4 @@ for(i in 1:length(pi_range)){
 }
 tictoc::toc()
 #write.csv(dist_table_vimes, "tests_sh/vimes_distance.csv")
+#write.csv(dist_table_vimes, "tests_sh/vimes_distance_imp_alpha.csv")

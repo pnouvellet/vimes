@@ -12,7 +12,8 @@ library(dplyr)
 
 
 # Read in the vimes results.
-vimes_dist <- read.csv("tests_sh/vimes_distance.csv", row.names = 1, check.names = F)
+#vimes_dist <- read.csv("tests_sh/vimes_distance.csv", row.names = 1, check.names = F)
+vimes_dist <- read.csv("tests_sh/vimes_distance_imp_alpha.csv", row.names = 1, check.names = F)
 
 # Bring in the data we are going to use for the simulations
 
@@ -63,7 +64,7 @@ rayleigh_mean <- 0.88
 # n = number of 'animals' to include in simulation
 # quants = value of quantiles to be evaluated
 
-n = 1000000
+#n = 1000000
 
 #  Now use the function to produce estimates of the cutoffs and the density
 
@@ -72,8 +73,104 @@ source("R/get_quantiles_sim.R")
 pi_range <- c(1.0, 0.8, 0.6, 0.4, 0.2, 0.1)
 q <- c(.50, .75, .90, .95, .99)
 
+
+## First use 10,000 animal for simulation 
+n <- 10000
 list_size <- 100
 tabs_list_1m <- list()
+
+tictoc::tic()
+for (j in 1:list_size) {
+  si_tab<- as.data.frame(matrix(nrow = length(pi_range), ncol = length(q)))
+  for(i in 1:length(pi_range)){
+    si_tab[i,] <- get_quantiles_sim(d_type = "spatial",
+                                    n = n, rrpi = pi_range[i], 
+                                    params = c(rayleigh_mean), 
+                                    q = q)$threshold_sim
+  }
+  tabs_list_1m[[j]] <- si_tab
+}
+tictoc::toc()
+
+
+comp_function <- function(x){
+  z <- ((vimes_dist - x)/vimes_dist)*100
+  z
+}
+
+
+comp_10k <- purrr::map(tabs_list_1m, comp_function)  
+comp_10k[[1]]  
+comp_10k[[2]]
+
+# extract the summary stats from these tables
+# some useful tips on how to do this are at: 
+# https://stackoverflow.com/questions/7651539/mean-of-elements-in-a-list-of-data-frames
+
+medians_10k_dist = plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), median)
+IQR25_10k_dist <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.25))
+IQR75_10k_dist <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.75))
+range_lower <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0))
+range_upper <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 1))
+
+#write.csv(medians_10k_dist, "tests_sh/comp_dist_10k_medians.csv")
+#write.csv(IQR25_10k_dist, "tests_sh/comp_dist_10k_IQR25.csv")
+#write.csv(IQR75_10k_dist, "tests_sh/comp_dist_10k_IQR75.csv")
+
+############################################################
+# look at 100K
+
+n = 100000
+tabs_list_1m <- list()
+
+
+tictoc::tic()
+for (j in 1:list_size) {
+  # to produce one table use:
+  si_tab<- as.data.frame(matrix(nrow = length(pi_range), ncol = length(q)))
+  
+  for(i in 1:length(pi_range)){
+    si_tab[i,] <- get_quantiles_sim(d_type = "spatial",
+                                    n = n, rrpi = pi_range[i], 
+                                    params = c(rayleigh_mean), 
+                                    q = q)$threshold_sim
+  }
+  tabs_list_1m[[j]] <- si_tab
+}
+tictoc::toc()
+
+## look at a couple of lists to check different
+#tabs_list_1m[[1]]
+#tabs_list_1m[[2]]
+
+### Compare for 10000
+comp_100k <- purrr::map(tabs_list_1m, comp_function)  
+comp_100k[[1]]  
+comp_100k[[2]]
+
+# extract the summary stats from these tables
+# some useful tips on how to do this are at: 
+# https://stackoverflow.com/questions/7651539/mean-of-elements-in-a-list-of-data-frames
+
+medians_100k_dist = plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), median)
+IQR25_100k_dist <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.25))
+IQR75_100k_dist <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.75))
+range_lower <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0))
+range_upper <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), function(x)quantile(x, probs = 1))
+
+#par(mfrow = c(nrow = 5, ncol = 6))
+#Box_100k_dist <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
+
+#write.csv(medians_100k_dist, "tests_sh/comp_dist_100k_medians.csv")
+#write.csv(IQR25_100k_dist, "tests_sh/comp_dist_100k_IQR25.csv")
+#write.csv(IQR75_100k_dist, "tests_sh/comp_dist_100k_IQR75.csv")
+
+## And then 1 million creatures.
+
+list_size <- 100
+tabs_list_1m <- list()
+
+n = 1000000
 
 tictoc::tic()
 for (j in 1:list_size) {
@@ -91,10 +188,6 @@ for (j in 1:list_size) {
 tictoc::toc()
 
 
-comp_function <- function(x){
-  z <- round((((vimes_dist/x)*100)-100),2)
-}
-
 comp_1mil <- purrr::map(tabs_list_1m, comp_function)  
 comp_1mil[[1]]  
 comp_1mil[[2]]
@@ -109,12 +202,12 @@ IQR75_1mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), funct
 range_lower <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), function(x)quantile(x, probs = 0))
 range_upper <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), function(x)quantile(x, probs = 1))
 
-par(mfrow = c(nrow = 5, ncol = 6))
-Box_1mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
+#par(mfrow = c(nrow = 5, ncol = 6))
+#Box_1mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
 
-# write.csv(medians_1mil_dist, "tests_sh/comp_dist_1mil_medians.csv")
-# write.csv(IQR25_1mil_dist, "tests_sh/comp_dist_1mil_IQR25.csv")
-# write.csv(IQR75_1mil_dist, "tests_sh/comp_dist_1mil_IQR75.csv")
+write.csv(medians_1mil_dist, "tests_sh/comp_dist_1mil_medians.csv")
+write.csv(IQR25_1mil_dist, "tests_sh/comp_dist_1mil_IQR25.csv")
+write.csv(IQR75_1mil_dist, "tests_sh/comp_dist_1mil_IQR75.csv")
 
 
 ###### Repeat for 5 million runs
@@ -142,7 +235,7 @@ medians_5mil_dist = plyr::aaply(plyr::laply(comp_5mil, as.matrix), c(2, 3), medi
 IQR25_5mil_dist <- plyr::aaply(plyr::laply(comp_5mil, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.25))
 IQR75_5mil_dist <- plyr::aaply(plyr::laply(comp_5mil, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.75))
 
-Box_5mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
+#Box_5mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
 
 # write.csv(medians_5mil_dist, "tests_sh/comp_dist_5mil_medians.csv")
 # write.csv(IQR25_5mil_dist, "tests_sh/comp_dist_5mil_IQR25.csv")
@@ -173,7 +266,7 @@ medians_10mil_dist = plyr::aaply(plyr::laply(comp_10mil, as.matrix), c(2, 3), me
 IQR25_10mil_dist <- plyr::aaply(plyr::laply(comp_10mil, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.25))
 IQR75_10mil_dist <- plyr::aaply(plyr::laply(comp_10mil, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.75))
 
-Box_10mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
+#Box_10mil_dist <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
 
 #write.csv(medians_10mil_dist, "tests_sh/comp_dist_10mil_medians.csv")
 #write.csv(IQR25_10mil_dist, "tests_sh/comp_dist_10mil_IQR25.csv")

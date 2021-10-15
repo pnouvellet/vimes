@@ -10,7 +10,8 @@ library(dplyr)
 
 
 # Read in the vimes results.
-vimes_ln <- read.csv("tests_sh/vimes_si_ln.csv", row.names = 1, check.names = F)
+#vimes_ln <- read.csv("tests_sh/vimes_si_ln.csv", row.names = 1, check.names = F)
+vimes_ln <- read.csv("tests_sh/vimes_si_ln_imp_alpha.csv", row.names = 1, check.names = F)
 
 # Bring in the data we are going to use for the simulations
 
@@ -94,9 +95,11 @@ tictoc::toc()
 #   z <- round((((vimes_ln/x)*100)-100),2)
 # }
 
+tabs_list_1m[[1]]
+round(tabs_list_1m[[1]])
 
 comp_function <- function(x){
-  z <- ((vimes_ln - x)/vimes_ln)*100
+  z <- ((vimes_ln - round(x))/vimes_ln)*100
   z
 }
 
@@ -110,15 +113,15 @@ comp_10k[[2]]
 # some useful tips on how to do this are at: 
 # https://stackoverflow.com/questions/7651539/mean-of-elements-in-a-list-of-data-frames
 
-medians_10k_ln = plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), median)
+medians_10k_ln <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), median)
 IQR25_10k_ln <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.25))
 IQR75_10k_ln <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0.75))
 range_lower <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 0))
 range_upper <- plyr::aaply(plyr::laply(comp_10k, as.matrix), c(2, 3), function(x)quantile(x, probs = 1))
 
-#write.csv(medians_10k_ln, "tests_sh/comp_ln_10k_medians.csv")
-#write.csv(IQR25_10k_ln, "tests_sh/comp_ln_10k_IQR25.csv")
-#write.csv(IQR75_10k_ln, "tests_sh/comp_ln_10k_IQR75.csv")
+write.csv(medians_10k_ln, "tests_sh/comp_ln_10k_medians.csv")
+write.csv(IQR25_10k_ln, "tests_sh/comp_ln_10k_IQR25.csv")
+write.csv(IQR75_10k_ln, "tests_sh/comp_ln_10k_IQR75.csv")
 
 ############################################################
 
@@ -164,9 +167,9 @@ range_upper <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), function(
 #par(mfrow = c(nrow = 5, ncol = 6))
 #Box_100k_ln <- plyr::aaply(plyr::laply(comp_100k, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
 
-#write.csv(medians_100k_ln, "tests_sh/comp_ln_100k_medians.csv")
-#write.csv(IQR25_100k_ln, "tests_sh/comp_ln_100k_IQR25.csv")
-#write.csv(IQR75_100k_ln, "tests_sh/comp_ln_100k_IQR75.csv")
+write.csv(medians_100k_ln, "tests_sh/comp_ln_100k_medians.csv")
+write.csv(IQR25_100k_ln, "tests_sh/comp_ln_100k_IQR25.csv")
+write.csv(IQR75_100k_ln, "tests_sh/comp_ln_100k_IQR75.csv")
 
 
 ####################### Compare for 1 million
@@ -192,15 +195,6 @@ tabs_list_1m[[j]] <- si_tab
 }
 tictoc::toc()
 
-
-# x = tabs_list_1m[[1]]
-# tabs_list_1m[[2]]
-# tabs_list_1m[[3]]
-
-comp_function <- function(x){
-  z <- round((((vimes_ln/x)*100)-100),2)
-}
-
 comp_1mil <- purrr::map(tabs_list_1m, comp_function)  
 vimes_ln
 comp_1mil[[1]]  
@@ -219,9 +213,9 @@ range_upper <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), function(
 par(mfrow = c(nrow = 5, ncol = 6))
 Box_1mil_ln <- plyr::aaply(plyr::laply(comp_1mil, as.matrix), c(2, 3), boxplot) # would ideally need to set these to be all the same axis if to be of use 
 
- #write.csv(medians_1mil_ln, "tests_sh/comp_ln_1mil_medians.csv")
- #write.csv(IQR25_1mil_ln, "tests_sh/comp_ln_1mil_IQR25.csv")
- #write.csv(IQR75_1mil_ln, "tests_sh/comp_ln_1mil_IQR75.csv")
+#write.csv(medians_1mil_ln, "tests_sh/comp_ln_1mil_medians.csv")
+#write.csv(IQR25_1mil_ln, "tests_sh/comp_ln_1mil_IQR25.csv")
+#write.csv(IQR75_1mil_ln, "tests_sh/comp_ln_1mil_IQR75.csv")
 
 
 ###### Repeat for 5 million runs
