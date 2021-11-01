@@ -175,8 +175,8 @@ plot_overlay(dist = as.vector(D_all$geo),
 
 ###### Produce a table with all the values in it. 
 
-pi_range <- c(1.0, 0.8, 0.6, 0.4, 0.2, 0.1)
-q <- c(.50, .75, .90, .95, .99)
+pi_range <- c(1.0, 0.8, 0.6)#, 0.4, 0.2, 0.1)
+q <- c(.50, .75, .90)#, .95, .99)
 
 
 si_table_vimes_gamma <- as.data.frame(matrix(nrow = length(pi_range), ncol = length(q)))

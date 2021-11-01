@@ -1,14 +1,15 @@
 ### Multi-species function first look
+#rm(list = ls())
 
 ## number of observed cases for each species
 s1_obs <- 303 # no of cases observed for dogs/species 1
 s2_obs <- 221 # no of cases observed for jackals/species 2
 
 ## Specify the reporting rates of the different species. 
-s1_rr <- 0.40 # rr for dogs/species 1
+s1_rr <- 0.60 # rr for dogs/species 1
 s2_rr <- 0.60 # rr for jackals/species 2
 
-n = 1000 # set number of simulations
+n = 100000 # set number of simulations
 
 q <- 0.95 # set the level of the quantile we want to use later
 
@@ -102,7 +103,10 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
         (all_ind$trans == 's2s1') * scale_vect[[3]] + 
         (all_ind$trans == 's2s2') * scale_vect[[4]]
       
-      all_ind$distance <- c(rgamma(n, shape = all_ind$shape, scale = all_ind$scale))
+      all_ind <- all_ind[1:nrow(all_ind)-1,]
+      
+      all_ind$distance <- c(rgamma(n-1, shape = all_ind$shape, scale = all_ind$scale))
+      all_ind[1,"distance"] <- 0
       
       #all_ind <- data.frame(Case_no = seq(1, n, 1),
       #                      distance = c(rgamma(n, shape = gam_parms$shape, scale = gam_parms$scale))) 
@@ -136,8 +140,11 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
         (all_ind$trans == 's2s1') * sdlog_vect[[3]] + 
         (all_ind$trans == 's2s2') * sdlog_vect[[4]]
       
-      all_ind$distance <- c(rlnorm(n, meanlog = all_ind$meanlog, sdlog = all_ind$sdlog))
+      all_ind <- all_ind[1:nrow(all_ind)-1,] # remove the last row with NA
       
+      all_ind$distance <- c(rlnorm(n-1, meanlog = all_ind$meanlog, sdlog = all_ind$sdlog))
+      all_ind[1,"distance"] <- 0
+        
     }
   
     # work out the cumulative SI
@@ -168,8 +175,13 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
       (all_ind$trans == 's2s1') * ray_sig_vect[[3]] + 
       (all_ind$trans == 's2s2') * ray_sig_vect[[4]]
     
-    all_ind$x_rel <- c(rnorm(n, mean = 0, sd = all_ind$ray_sig))
-    all_ind$y_rel <- c(rnorm(n, mean = 0, sd = all_ind$ray_sig))
+    all_ind <- all_ind[1:nrow(all_ind)-1,] # remove the last line as NA for transmission 
+    
+    all_ind$x_rel <- c(rnorm(n-1, mean = 0, sd = all_ind$ray_sig))
+    all_ind$y_rel <- c(rnorm(n-1, mean = 0, sd = all_ind$ray_sig))
+    
+    all_ind[1,"x_rel"] <- 0
+    all_ind[1,"y_rel"] <- 0
     
     # all distances
     all_ind$True_dist <- sqrt(all_ind$x_rel^2+all_ind$y_rel^2)  # using trigonometry of a^2 + b^2 = c^2
@@ -206,13 +218,7 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
   prop_s2s1 <- length(f_s2s1)/(obs_n-1)
   prop_s2s2 <- length(f_s2s2)/(obs_n-1)
   
-# prop_total <- prop_s1s1+prop_s1s2+prop_s2s1+prop_s2s2
-#  if(prop_total != 1) {
-#    msg3 <- "Proportions of transmissions do not sum to 1"
-#    stop(msg3)
-#  }
-  
-  
+
   threshold_sim <- quantile(obs$diff, q, na.rm = T)
   threshold_s1s1 <- quantile(obs[f_s1s1, "diff"], q, na.rm = T)
   threshold_s2s2 <- quantile(obs[f_s2s2, "diff"], q, na.rm = T)
@@ -229,6 +235,19 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
   density_s2s1 <- density(obs[f_s2s1, "diff"], 
                           na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
   
+  f_s1s1_below_quant <- which(obs$obs_trans == "s1s1" & obs$distance <= threshold_sim)
+  f_s2s2_below_quant <- which(obs$obs_trans == "s2s2" & obs$distance <= threshold_sim)
+  f_s1s2_below_quant <- which(obs$obs_trans == "s1s2" & obs$distance <= threshold_sim)
+  f_s2s1_below_quant <- which(obs$obs_trans == "s2s1" & obs$distance <= threshold_sim)
+  
+  #work out the proportion of each type of transmission
+  
+  n_below_quant <- length(which(obs$distance <= threshold_sim))
+  
+  prop_s1s1_below_quant <- length(f_s1s1_below_quant)/(obs_n-1)
+  prop_s1s2_below_quant <- length(f_s1s2_below_quant)/(obs_n-1)
+  prop_s2s1_below_quant <- length(f_s2s1_below_quant)/(obs_n-1)
+  prop_s2s2_below_quant <- length(f_s2s2_below_quant)/(obs_n-1)
   
   return(res = list(f_s1s1 = f_s1s1, f_s1s2 = f_s1s2, f_s2s1 = f_s2s1, f_s2s2 = f_s2s2,
                     prop_s1s1 = prop_s1s1, prop_s1s2 = prop_s1s2,
@@ -237,21 +256,25 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
                     threshold_s1s1 = threshold_s1s1, density_s1s1 = density_s1s1,
                     threshold_s2s2 = threshold_s2s2, density_s2s2 = density_s2s2, 
                     threshold_s1s2 = threshold_s1s2, density_s1s2 = density_s1s2,
-                    threshold_s2s1 = threshold_s2s1, density_s2s1 = density_s2s1
-  ))
+                    threshold_s2s1 = threshold_s2s1, density_s2s1 = density_s2s1,
+                    f_s1s1_below_quant = f_s1s1_below_quant, f_s1s2_below_quant = f_s1s2_below_quant,
+                    f_s2s1_below_quant = f_s2s1_below_quant, f_s2s2_below_quant = f_s2s2_below_quant, 
+                    prop_s1s1_below_quant = prop_s1s1_below_quant, prop_s1s2_below_quant = prop_s1s2_below_quant,
+                    prop_s2s1_below_quant = prop_s2s1_below_quant, prop_s2s2_below_quant = prop_s2s2_below_quant))
   
 }
 
-## Pierre we had a convergence check in the single species model. Put something like that in here?
+## Pierre we had a convergence check in the single species model. 
+## Put something like that in here?
 
-## LEt's try the function
+## Let's try the function
 tictoc::tic()
 out_si_gamma <- get_quantiles_multi(d_type = "temporal", distrib = "gamma", 
                                     s1_obs = s1_obs, s2_obs = s2_obs,
                                     s1_rr = 0.4, s2_rr = 0.4,
-                                    params_s1s1 = params_s1s1, params_s1s2 = params_s1s2,
-                                    params_s2s1 = params_s2s1, params_s2s2 = params_s2s2,
-                                    n = 1000000, q = q)
+                                    params_s1s1 = c(si_mean, si_sd), params_s1s2 = c(si_mean, si_sd),
+                                    params_s2s1 = c(si_mean, si_sd), params_s2s2 = c(si_mean, si_sd),
+                                    n = 1000000, q = 0.95)
 
 tictoc::toc()
 
@@ -261,7 +284,248 @@ out_si_gamma$prop_s1s2
 out_si_gamma$prop_s2s1
 out_si_gamma$prop_s2s2
 
+out_si_gamma$prop_s1s1_below_quant
+out_si_gamma$prop_s1s2_below_quant
+out_si_gamma$prop_s2s1_below_quant
+out_si_gamma$prop_s2s2_below_quant
 
+# As want to look at the values for lots of different combinations of reporting rates
+# for the different transmission types will write a function to run this
+
+### first get the results using all the transmission types
+
+rr_s1_vect <- rr_s2_vect <-  c(1.0, 0.8, 0.6, 0.4, 0.2, 0.1)
+
+#cutoff tables
+all_trans_table <- s1_trans_table <- s1s2_trans_table <- s2s1_trans_table <- 
+  s2_trans_table <- as.data.frame(matrix(ncol = length(rr_s1_vect), nrow = length(rr_s2_vect)))
+colnames(all_trans_table) <- colnames(s1_trans_table) <- colnames(s1s2_trans_table) <-
+  colnames(s2s1_trans_table) <- colnames(s2_trans_table) <-  rr_s1_vect
+rownames(all_trans_table) <- rownames(s1_trans_table) <- rownames(s1s2_trans_table) <-
+  rownames(s2s1_trans_table) <- rownames(s2_trans_table) <-  rr_s2_vect
+
+# proportions tables
+s1_props_table <- s1s2_props_table <- s2s1_props_table <- 
+  s2_props_table <- as.data.frame(matrix(ncol = length(rr_s1_vect), nrow = length(rr_s2_vect)))
+colnames(s1_props_table) <- colnames(s1s2_props_table) <-
+  colnames(s2s1_props_table) <- colnames(s2_props_table) <-  rr_s1_vect
+rownames(s1_props_table) <- rownames(s1s2_props_table) <-
+  rownames(s2s1_props_table) <- rownames(s2_props_table) <-  rr_s2_vect
+
+
+
+q <- 0.75
+
+tictoc::tic()
+for (i in 1:length(rr_s1_vect)) {
+  for (j in 1:length(rr_s2_vect)) {
+    out <-  get_quantiles_multi(d_type = "temporal", distrib = "gamma", 
+                                s1_obs = s1_obs, s2_obs = s2_obs,
+                                s1_rr = rr_s1_vect[i],
+                                s2_rr = rr_s2_vect[j],
+                                params_s1s1 = c(si_mean, si_sd), params_s1s2 = c(si_mean, si_sd),
+                                params_s2s1 = c(si_mean, si_sd), params_s2s2 = c(si_mean, si_sd),
+                                n = 1000000, q = q)
+    all_trans_table[j,i] <- out$threshold_sim
+    s1_trans_table[j,i] <- out$threshold_s1s1
+    s2_trans_table[j,i] <- out$threshold_s2s2
+    s1s2_trans_table[j,i] <- out$threshold_s1s2
+    s2s1_trans_table[j,i] <- out$threshold_s2s1
+    
+    s1_props_table[j,i] <- out$prop_s1s1
+    s2_props_table[j,i] <- out$prop_s2s2
+    s1s2_props_table[j,i] <- out$prop_s1s2
+    s2s1_props_table[j,i] <- out$prop_s2s1
+  }
+}
+tictoc::toc()
+
+
+## Gamma tables at q = 0.95
+
+# write.csv(all_trans_table, "tests_sh/all_trans_table_gamma0.95.csv")
+# write.csv(s1_trans_table, "tests_sh/s1_trans_table_gamma0.95.csv")
+# write.csv(s2_trans_table, "tests_sh/s2_trans_table_gamma0.95.csv")
+# write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_gamma0.95.csv")
+# write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_gamma0.95.csv")
+# 
+# # and extract and save proportions
+# write.csv(s1_props_table, "tests_sh/s1_props_table_gamma0.95.csv")
+# write.csv(s2_props_table, "tests_sh/s2_props_table_gamma0.95.csv")
+# write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_gamma0.95.csv")
+# write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_gamma0.95.csv")
+
+# Gamma at q = 0.99
+
+#write.csv(all_trans_table, "tests_sh/all_trans_table_gamma0.99.csv")
+#write.csv(s1_trans_table, "tests_sh/s1_trans_table_gamma0.99.csv")
+#write.csv(s2_trans_table, "tests_sh/s2_trans_table_gamma0.99.csv")
+#write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_gamma0.99.csv")
+#write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_gamma0.99.csv")
+
+# and extract and save proportions
+#write.csv(s1_props_table, "tests_sh/s1_props_table_gamma0.99.csv")
+#write.csv(s2_props_table, "tests_sh/s2_props_table_gamma0.99.csv")
+#write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_gamma0.99.csv")
+#write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_gamma0.99.csv")
+
+# Gamma at 0.75
+#write.csv(all_trans_table, "tests_sh/all_trans_table_gamma0.75.csv")
+#write.csv(s1_trans_table, "tests_sh/s1_trans_table_gamma0.75.csv")
+#write.csv(s2_trans_table, "tests_sh/s2_trans_table_gamma0.75.csv")
+#write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_gamma0.75.csv")
+#write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_gamma0.75.csv")
+
+# and extract and save proportions
+#write.csv(s1_props_table, "tests_sh/s1_props_table_gamma0.75.csv")
+#write.csv(s2_props_table, "tests_sh/s2_props_table_gamma0.75.csv")
+#write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_gamma0.75.csv")
+#write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_gamma0.75.csv")
+
+
+#####################################
+#### Now do the same set of values using the lognormal for the serial interval distribution
+
+q <- 0.75
+
+tictoc::tic()
+for (i in 1:length(rr_s1_vect)) {
+  for (j in 1:length(rr_s2_vect)) {
+    out <-  get_quantiles_multi(d_type = "temporal", distrib = "lognormal", 
+                                s1_obs = s1_obs, s2_obs = s2_obs,
+                                s1_rr = rr_s1_vect[i],
+                                s2_rr = rr_s2_vect[j],
+                                params_s1s1 = c(si_mean, si_sd), params_s1s2 = c(si_mean, si_sd),
+                                params_s2s1 = c(si_mean, si_sd), params_s2s2 = c(si_mean, si_sd),
+                                n = 1000000, q = q)
+    all_trans_table[j,i] <- out$threshold_sim
+    s1_trans_table[j,i] <- out$threshold_s1s1
+    s2_trans_table[j,i] <- out$threshold_s2s2
+    s1s2_trans_table[j,i] <- out$threshold_s1s2
+    s2s1_trans_table[j,i] <- out$threshold_s2s1
+    
+    s1_props_table[j,i] <- out$prop_s1s1
+    s2_props_table[j,i] <- out$prop_s2s2
+    s1s2_props_table[j,i] <- out$prop_s1s2
+    s2s1_props_table[j,i] <- out$prop_s2s1
+  }
+}
+tictoc::toc()
+
+## Lognormal tables at q = 0.95
+
+# write.csv(all_trans_table, "tests_sh/all_trans_table_ln0.95.csv")
+# write.csv(s1_trans_table, "tests_sh/s1_trans_table_ln0.95.csv")
+# write.csv(s2_trans_table, "tests_sh/s2_trans_table_ln0.95.csv")
+# write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_ln0.95.csv")
+# write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_ln0.95.csv")
+# 
+# # and extract and save proportions
+# write.csv(s1_props_table, "tests_sh/s1_props_table_ln0.95.csv")
+# write.csv(s2_props_table, "tests_sh/s2_props_table_ln0.95.csv")
+# write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_ln0.95.csv")
+# write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_ln0.95.csv")
+
+# Lognormal tables at q = 0.99
+
+#write.csv(all_trans_table, "tests_sh/all_trans_table_ln0.99.csv")
+#write.csv(s1_trans_table, "tests_sh/s1_trans_table_ln0.99.csv")
+#write.csv(s2_trans_table, "tests_sh/s2_trans_table_ln0.99.csv")
+#write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_ln0.99.csv")
+#write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_ln0.99.csv")
+
+# and extract and save proportions
+#write.csv(s1_props_table, "tests_sh/s1_props_table_ln0.99.csv")
+#write.csv(s2_props_table, "tests_sh/s2_props_table_ln0.99.csv")
+#write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_ln0.99.csv")
+#write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_ln0.99.csv")
+
+# Lognormal at 0.75
+#write.csv(all_trans_table, "tests_sh/all_trans_table_ln0.75.csv")
+#write.csv(s1_trans_table, "tests_sh/s1_trans_table_ln0.75.csv")
+#write.csv(s2_trans_table, "tests_sh/s2_trans_table_ln0.75.csv")
+#write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_ln0.75.csv")
+#write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_ln0.75.csv")
+
+# and extract and save proportions
+#write.csv(s1_props_table, "tests_sh/s1_props_table_ln0.75.csv")
+#write.csv(s2_props_table, "tests_sh/s2_props_table_ln0.75.csv")
+#write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_ln0.75.csv")
+#write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_ln0.75.csv")
+
+
+#### Now do the same set of values for the distance kernel distribution
+
+q <- 0.95
+
+tictoc::tic()
+for (i in 1:length(rr_s1_vect)) {
+  for (j in 1:length(rr_s2_vect)) {
+    out <-  get_quantiles_multi(d_type = "spatial", 
+                                s1_obs = s1_obs, s2_obs = s2_obs,
+                                s1_rr = rr_s1_vect[i],
+                                s2_rr = rr_s2_vect[j],
+                                params_s1s1 = c(rayleigh_mean), params_s1s2 = c(rayleigh_mean),
+                                params_s2s1 = c(rayleigh_mean), params_s2s2 = c(rayleigh_mean),
+                                n = 1000000, q = q)
+    all_trans_table[j,i] <- out$threshold_sim
+    s1_trans_table[j,i] <- out$threshold_s1s1
+    s2_trans_table[j,i] <- out$threshold_s2s2
+    s1s2_trans_table[j,i] <- out$threshold_s1s2
+    s2s1_trans_table[j,i] <- out$threshold_s2s1
+    
+    s1_props_table[j,i] <- out$prop_s1s1
+    s2_props_table[j,i] <- out$prop_s2s2
+    s1s2_props_table[j,i] <- out$prop_s1s2
+    s2s1_props_table[j,i] <- out$prop_s2s1
+  }
+}
+tictoc::toc()
+
+## Spatial tables at q = 0.95
+
+# write.csv(all_trans_table, "tests_sh/all_trans_table_spatial0.95.csv")
+# write.csv(s1_trans_table, "tests_sh/s1_trans_table_spatial0.95.csv")
+# write.csv(s2_trans_table, "tests_sh/s2_trans_table_spatial0.95.csv")
+# write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_spatial0.95.csv")
+# write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_spatial0.95.csv")
+ 
+ # and extract and save proportions
+# write.csv(s1_props_table, "tests_sh/s1_props_table_spatial0.95.csv")
+# write.csv(s2_props_table, "tests_sh/s2_props_table_spatial0.95.csv")
+# write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_spatial0.95.csv")
+# write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_spatial0.95.csv")
+
+# Spatial tables at q = 0.99
+
+#write.csv(all_trans_table, "tests_sh/all_trans_table_spatial0.99.csv")
+#write.csv(s1_trans_table, "tests_sh/s1_trans_table_spatial0.99.csv")
+#write.csv(s2_trans_table, "tests_sh/s2_trans_table_spatial0.99.csv")
+#write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_spatial0.99.csv")
+#write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_spatial0.99.csv")
+
+# and extract and save proportions
+#write.csv(s1_props_table, "tests_sh/s1_props_table_spatial0.99.csv")
+#write.csv(s2_props_table, "tests_sh/s2_props_table_spatial0.99.csv")
+#write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_spatial0.99.csv")
+#write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_spatial0.99.csv")
+
+# spatial at 0.75
+#write.csv(all_trans_table, "tests_sh/all_trans_table_spatial0.75.csv")
+#write.csv(s1_trans_table, "tests_sh/s1_trans_table_spatial0.75.csv")
+#write.csv(s2_trans_table, "tests_sh/s2_trans_table_spatial0.75.csv")
+#write.csv(s1s2_trans_table, "tests_sh/s1s2_trans_table_spatial0.75.csv")
+#write.csv(s2s1_trans_table, "tests_sh/s2s1_trans_table_spatial0.75.csv")
+
+# and extract and save proportions
+#write.csv(s1_props_table, "tests_sh/s1_props_table_spatial0.75.csv")
+#write.csv(s2_props_table, "tests_sh/s2_props_table_spatial0.75.csv")
+#write.csv(s1s2_props_table, "tests_sh/s1s2_props_table_spatial0.75.csv")
+#write.csv(s2s1_props_table, "tests_sh/s2s1_props_table_spatial0.75.csv")
+
+
+###------------------------------------------------------------------------------
+# Old work below here
 
 ## Now try the function for the SIs
 tictoc::tic()
