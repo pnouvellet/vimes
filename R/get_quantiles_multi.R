@@ -200,19 +200,19 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
   density_s2s1 <- density(obs[f_s2s1, "diff"], 
                           na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
   
-  f_s1s1_below_quant <- which(obs$obs_trans == "s1s1" & obs$distance <= threshold_sim)
-  f_s2s2_below_quant <- which(obs$obs_trans == "s2s2" & obs$distance <= threshold_sim)
-  f_s1s2_below_quant <- which(obs$obs_trans == "s1s2" & obs$distance <= threshold_sim)
-  f_s2s1_below_quant <- which(obs$obs_trans == "s2s1" & obs$distance <= threshold_sim)
+  f_s1s1_below_quant <- which(obs$obs_trans == "s1s1" & obs$diff <= threshold_sim)
+  f_s2s2_below_quant <- which(obs$obs_trans == "s2s2" & obs$diff <= threshold_sim)
+  f_s1s2_below_quant <- which(obs$obs_trans == "s1s2" & obs$diff <= threshold_sim)
+  f_s2s1_below_quant <- which(obs$obs_trans == "s2s1" & obs$diff <= threshold_sim)
   
   #work out the proportion of each type of transmission
   
-  n_below_quant <- length(which(obs$distance <= threshold_sim))
+  n_below_quant <- length(which(obs$diff <= threshold_sim))
   
-  prop_s1s1_below_quant <- length(f_s1s1_below_quant)/(obs_n-1)
-  prop_s1s2_below_quant <- length(f_s1s2_below_quant)/(obs_n-1)
-  prop_s2s1_below_quant <- length(f_s2s1_below_quant)/(obs_n-1)
-  prop_s2s2_below_quant <- length(f_s2s2_below_quant)/(obs_n-1)
+  prop_s1s1_below_quant <- length(f_s1s1_below_quant)/(n_below_quant)
+  prop_s1s2_below_quant <- length(f_s1s2_below_quant)/(n_below_quant)
+  prop_s2s1_below_quant <- length(f_s2s1_below_quant)/(n_below_quant)
+  prop_s2s2_below_quant <- length(f_s2s2_below_quant)/(n_below_quant)
   
   return(res = list(f_s1s1 = f_s1s1, f_s1s2 = f_s1s2, f_s2s1 = f_s2s1, f_s2s2 = f_s2s2,
                     prop_s1s1 = prop_s1s1, prop_s1s2 = prop_s1s2,
