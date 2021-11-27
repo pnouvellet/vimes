@@ -10,8 +10,8 @@ library(dplyr)
 
 
 # Read in the vimes results.
-vimes_gamma <- read.csv("tests_sh/vimes_si_gamma.csv", row.names = 1, check.names = F)
-vimes_gamma <- read.csv("tests_sh/vimes_si_gamma_imp_alpha.csv", row.names = 1, check.names = F)
+vimes_gamma <- read.csv("tests_sh/vimes_cutoffs/vimes_si_gamma.csv", row.names = 1, check.names = F)
+vimes_gamma <- read.csv("tests_sh/vimes_cutoffs/vimes_si_gamma_imp_alpha.csv", row.names = 1, check.names = F)
 
 
 # Bring in the data we are going to use for the simulations

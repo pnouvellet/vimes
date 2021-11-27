@@ -1,7 +1,8 @@
 
 
 get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n, 
-                                params_s1s1, params_s1s2, params_s2s1, params_s2s2, q) {
+                                params_s1s1, params_s1s2,# params_s2s1, 
+                                params_s2s2, q) {
   
   ## Calculate the actual number of cases for each species
   s1_n <- s1_obs/s1_rr
@@ -42,9 +43,9 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
       gam_parms_s1s1 <- epitrix::gamma_mucv2shapescale(mu = params_s1s1[1],
                                                        cv = params_s1s1[2]/params_s1s1[1])
       gam_parms_s1s2 <- epitrix::gamma_mucv2shapescale(mu = params_s1s2[1],
-                                                       cv = params_s1s2[2]/params_s1s1[1])
-      gam_parms_s2s1 <- epitrix::gamma_mucv2shapescale(mu = params_s2s1[1],
-                                                       cv = params_s2s1[2]/params_s2s1[1])
+                                                       cv = params_s1s2[2]/params_s1s2[1])
+      #gam_parms_s2s1 <- epitrix::gamma_mucv2shapescale(mu = params_s2s1[1],
+      #                                                 cv = params_s2s1[2]/params_s2s1[1])
       gam_parms_s2s2 <- epitrix::gamma_mucv2shapescale(mu = params_s2s2[1],
                                                        cv = params_s2s2[2]/params_s2s2[1])
       
@@ -55,18 +56,22 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
       # all_ind$trans <- c(paste(all_ind$species[1:n-1], all_ind$species[2:n], sep = ""),NA)
       
       # add a column with the parameters for the type of transmission
-      shape_vect <- c(gam_parms_s1s1[1], gam_parms_s1s2[1], gam_parms_s2s1[1], gam_parms_s2s2[1]) # s1s1,s1s2,s2s1,s2s2
-      scale_vect <- c(gam_parms_s1s1[2], gam_parms_s1s2[2], gam_parms_s2s1[2], gam_parms_s2s2[2])
+      #shape_vect <- c(gam_parms_s1s1[1], gam_parms_s1s2[1], gam_parms_s2s1[1], gam_parms_s2s2[1]) # s1s1,s1s2,s2s1,s2s2
+      #scale_vect <- c(gam_parms_s1s1[2], gam_parms_s1s2[2], gam_parms_s2s1[2], gam_parms_s2s2[2])
       
+      shape_vect <- c(gam_parms_s1s1[1], gam_parms_s1s2[1], gam_parms_s2s2[1]) # s1s1,s1s2,s2s1,s2s2
+      scale_vect <- c(gam_parms_s1s1[2], gam_parms_s1s2[2], gam_parms_s2s2[2])
+      
+      # changed below to work with the shorter list of shape-vect and scale-vect 
       all_ind$shape <- (all_ind$trans == 's1s1') * shape_vect[[1]] + 
         (all_ind$trans == 's1s2') * shape_vect[[2]] + 
-        (all_ind$trans == 's2s1') * shape_vect[[3]] + 
-        (all_ind$trans == 's2s2') * shape_vect[[4]]
+        (all_ind$trans == 's2s1') * shape_vect[[2]] + 
+        (all_ind$trans == 's2s2') * shape_vect[[3]]
       
       all_ind$scale <- (all_ind$trans == 's1s1') * scale_vect[[1]] + 
         (all_ind$trans == 's1s2') * scale_vect[[2]] + 
-        (all_ind$trans == 's2s1') * scale_vect[[3]] + 
-        (all_ind$trans == 's2s2') * scale_vect[[4]]
+        (all_ind$trans == 's2s1') * scale_vect[[2]] + 
+        (all_ind$trans == 's2s2') * scale_vect[[3]]
       
       all_ind <- all_ind[1:nrow(all_ind)-1,]
       
@@ -86,24 +91,26 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
       meanlog_s1s2 <- log(params_s1s2[1]/(sqrt(1 + params_s1s2[2]^2/params_s1s2[1]^2)))
       sdlog_s1s2 <- sqrt(log(1 + params_s1s2[2]^2/params_s1s2[1]^2))
       
-      meanlog_s2s1 <- log(params_s2s1[1]/(sqrt(1 + params_s2s1[2]^2/params_s2s1[1]^2)))
-      sdlog_s2s1 <- sqrt(log(1 + params_s2s1[2]^2/params_s2s1[1]^2))
+      #meanlog_s2s1 <- log(params_s2s1[1]/(sqrt(1 + params_s2s1[2]^2/params_s2s1[1]^2)))
+      #sdlog_s2s1 <- sqrt(log(1 + params_s2s1[2]^2/params_s2s1[1]^2))
       
       meanlog_s2s2 <- log(params_s2s2[1]/(sqrt(1 + params_s2s2[2]^2/params_s2s2[1]^2)))
       sdlog_s2s2 <- sqrt(log(1 + params_s2s2[2]^2/params_s2s2[1]^2))
       
-      meanlog_vect <- c(meanlog_s1s1, meanlog_s1s2, meanlog_s2s1, meanlog_s2s2) # s1s1,s1s2,s2s1,s2s2
-      sdlog_vect <- c(sdlog_s1s1, sdlog_s1s2, sdlog_s2s1, sdlog_s2s2)
+      meanlog_vect <- c(meanlog_s1s1, meanlog_s1s2, #meanlog_s2s1, 
+                        meanlog_s2s2) # s1s1,s1s2,s2s1,s2s2
+      sdlog_vect <- c(sdlog_s1s1, sdlog_s1s2, #sdlog_s2s1, 
+                      sdlog_s2s2)
       
       all_ind$meanlog <- (all_ind$trans == 's1s1') * meanlog_vect[[1]] + 
         (all_ind$trans == 's1s2') * meanlog_vect[[2]] + 
-        (all_ind$trans == 's2s1') * meanlog_vect[[3]] + 
-        (all_ind$trans == 's2s2') * meanlog_vect[[4]]
+        (all_ind$trans == 's2s1') * meanlog_vect[[2]] + # was previously [[3]] and the one below was [[4]] when had s1s2 and s2s1 different 
+        (all_ind$trans == 's2s2') * meanlog_vect[[3]]
       
       all_ind$sdlog <- (all_ind$trans == 's1s1') * sdlog_vect[[1]] + 
         (all_ind$trans == 's1s2') * sdlog_vect[[2]] + 
-        (all_ind$trans == 's2s1') * sdlog_vect[[3]] + 
-        (all_ind$trans == 's2s2') * sdlog_vect[[4]]
+        (all_ind$trans == 's2s1') * sdlog_vect[[2]] + 
+        (all_ind$trans == 's2s2') * sdlog_vect[[3]]
       
       all_ind <- all_ind[1:nrow(all_ind)-1,] # remove the last row with NA
       
@@ -130,15 +137,16 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
     
     ray_sig_s1s1 <- params_s1s1 / sqrt(acos(-1)/2)
     ray_sig_s1s2 <- params_s1s2 / sqrt(acos(-1)/2)
-    ray_sig_s2s1 <- params_s2s1 / sqrt(acos(-1)/2)
+    #ray_sig_s2s1 <- params_s2s1 / sqrt(acos(-1)/2)
     ray_sig_s2s2 <- params_s2s2 / sqrt(acos(-1)/2)
     
-    ray_sig_vect <- c(ray_sig_s1s1, ray_sig_s1s2, ray_sig_s2s1, ray_sig_s2s2) # s1s1,s1s2,s2s1,s2s2
+    ray_sig_vect <- c(ray_sig_s1s1, ray_sig_s1s2, #ray_sig_s2s1, 
+                      ray_sig_s2s2) # s1s1,s1s2,s2s1,s2s2
     
     all_ind$ray_sig <- (all_ind$trans == 's1s1') * ray_sig_vect[[1]] + 
       (all_ind$trans == 's1s2') * ray_sig_vect[[2]] + 
-      (all_ind$trans == 's2s1') * ray_sig_vect[[3]] + 
-      (all_ind$trans == 's2s2') * ray_sig_vect[[4]]
+      (all_ind$trans == 's2s1') * ray_sig_vect[[2]] + 
+      (all_ind$trans == 's2s2') * ray_sig_vect[[3]]
     
     all_ind <- all_ind[1:nrow(all_ind)-1,] # remove the last line as NA for transmission 
     
@@ -173,37 +181,52 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
   
   f_s1s1<- which(obs$obs_trans == "s1s1")
   f_s2s2<- which(obs$obs_trans == "s2s2")
-  f_s1s2<- which(obs$obs_trans == "s1s2")
-  f_s2s1<- which(obs$obs_trans == "s2s1")
+  #f_s1s2<- which(obs$obs_trans == "s1s2")
+  #f_s2s1<- which(obs$obs_trans == "s2s1")
+  
+  f_s1s2<- which(obs$obs_trans == "s1s2"| obs$obs_trans == "s2s1" ) 
+  
+  
   
   #work out the proportion of each type of transmission
   
   prop_s1s1 <- length(f_s1s1)/(obs_n-1)
-  prop_s1s2 <- length(f_s1s2)/(obs_n-1)
-  prop_s2s1 <- length(f_s2s1)/(obs_n-1)
+  # prop_s1s2 <- length(f_s1s2)/(obs_n-1)
+  # prop_s2s1 <- length(f_s2s1)/(obs_n-1)
   prop_s2s2 <- length(f_s2s2)/(obs_n-1)
+  
+  prop_s1s2 <- length(f_s1s2)/(obs_n-1)
   
   
   threshold_sim <- quantile(obs$diff, q, na.rm = T)
   threshold_s1s1 <- quantile(obs[f_s1s1, "diff"], q, na.rm = T)
   threshold_s2s2 <- quantile(obs[f_s2s2, "diff"], q, na.rm = T)
+  # threshold_s1s2 <- quantile(obs[f_s1s2, "diff"], q, na.rm = T)
+  # threshold_s2s1 <- quantile(obs[f_s2s1, "diff"], q, na.rm = T)
+  
   threshold_s1s2 <- quantile(obs[f_s1s2, "diff"], q, na.rm = T)
-  threshold_s2s1 <- quantile(obs[f_s2s1, "diff"], q, na.rm = T)
   
   density_sim <- density(obs$diff, na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
   density_s1s1 <- density(obs[f_s1s1, "diff"],
                           na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
   density_s2s2 <- density(obs[f_s2s2, "diff"],
                           na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
+  # density_s1s2 <- density(obs[f_s1s2, "diff"], 
+  #                         na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
+  # density_s2s1 <- density(obs[f_s2s1, "diff"], 
+  #                         na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
+  # 
+  
   density_s1s2 <- density(obs[f_s1s2, "diff"], 
                           na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
-  density_s2s1 <- density(obs[f_s2s1, "diff"], 
-                          na.rm = T, from = 0, n = round(max(obs$diff, na.rm = T)))
-  
+ 
   f_s1s1_below_quant <- which(obs$obs_trans == "s1s1" & obs$diff <= threshold_sim)
   f_s2s2_below_quant <- which(obs$obs_trans == "s2s2" & obs$diff <= threshold_sim)
-  f_s1s2_below_quant <- which(obs$obs_trans == "s1s2" & obs$diff <= threshold_sim)
-  f_s2s1_below_quant <- which(obs$obs_trans == "s2s1" & obs$diff <= threshold_sim)
+  # f_s1s2_below_quant <- which(obs$obs_trans == "s1s2" & obs$diff <= threshold_sim)
+  # f_s2s1_below_quant <- which(obs$obs_trans == "s2s1" & obs$diff <= threshold_sim)
+  # 
+  f_s1s2_below_quant <- which(obs$obs_trans == "s1s2" & obs$diff <= threshold_sim | 
+                                obs$obs_trans == "s2s1" & obs$diff <= threshold_sim)
   
   #work out the proportion of each type of transmission
   
@@ -211,21 +234,25 @@ get_quantiles_multi <- function(d_type, distrib, s1_obs, s2_obs, s1_rr, s2_rr, n
   
   prop_s1s1_below_quant <- length(f_s1s1_below_quant)/(n_below_quant)
   prop_s1s2_below_quant <- length(f_s1s2_below_quant)/(n_below_quant)
-  prop_s2s1_below_quant <- length(f_s2s1_below_quant)/(n_below_quant)
+  #prop_s2s1_below_quant <- length(f_s2s1_below_quant)/(n_below_quant)
   prop_s2s2_below_quant <- length(f_s2s2_below_quant)/(n_below_quant)
   
-  return(res = list(f_s1s1 = f_s1s1, f_s1s2 = f_s1s2, f_s2s1 = f_s2s1, f_s2s2 = f_s2s2,
+  return(res = list(#f_s1s1 = f_s1s1, f_s1s2 = f_s1s2, f_s2s1 = f_s2s1, f_s2s2 = f_s2s2,
+                    f_s1s1 = f_s1s1, f_s1s2 = f_s1s2, f_s2s2 = f_s2s2,
                     prop_s1s1 = prop_s1s1, prop_s1s2 = prop_s1s2,
-                    prop_s2s1 = prop_s2s1, prop_s2s2 = prop_s2s2,
+                    #prop_s2s1 = prop_s2s1,
+                    prop_s2s2 = prop_s2s2,
                     threshold_sim = threshold_sim, density_sim = density_sim, 
                     threshold_s1s1 = threshold_s1s1, density_s1s1 = density_s1s1,
                     threshold_s2s2 = threshold_s2s2, density_s2s2 = density_s2s2, 
                     threshold_s1s2 = threshold_s1s2, density_s1s2 = density_s1s2,
-                    threshold_s2s1 = threshold_s2s1, density_s2s1 = density_s2s1,
+                   # threshold_s2s1 = threshold_s2s1, density_s2s1 = density_s2s1,
                     f_s1s1_below_quant = f_s1s1_below_quant, f_s1s2_below_quant = f_s1s2_below_quant,
-                    f_s2s1_below_quant = f_s2s1_below_quant, f_s2s2_below_quant = f_s2s2_below_quant, 
+                    #f_s2s1_below_quant = f_s2s1_below_quant, 
+                   f_s2s2_below_quant = f_s2s2_below_quant, 
                     prop_s1s1_below_quant = prop_s1s1_below_quant, prop_s1s2_below_quant = prop_s1s2_below_quant,
-                    prop_s2s1_below_quant = prop_s2s1_below_quant, prop_s2s2_below_quant = prop_s2s2_below_quant))
+                    #prop_s2s1_below_quant = prop_s2s1_below_quant, 
+                   prop_s2s2_below_quant = prop_s2s2_below_quant))
   
 }
 
