@@ -8,8 +8,8 @@
 rm(list = ls())
 
 ## number of observed cases for each species
-s1_obs <- 303 # no of cases observed for dogs/species 1
-s2_obs <- 221 # no of cases observed for jackals/species 2
+s1_obs <- 313 # no of cases observed for dogs/species 1
+s2_obs <- 236 # no of cases observed for jackals/species 2
 
 ## Specify the reporting rates of the different species. 
 s1_rr <- 0.60 # rr for dogs/species 1
@@ -47,7 +47,7 @@ s2_rr <- 0.2
 # code put elsewhere to try and keep this script a bit tidier
 source("tests_sh/code_to_run_multiple_comparisons_gamma.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_1mill_0.2_0.2_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_1mill_0.2_0.2_0.95.csv")
 
 ## Now repeat for the next set of values
 q <- 0.95
@@ -56,7 +56,7 @@ s2_rr <- 0.8
 
 source("tests_sh/code_to_run_multiple_comparisons_gamma.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_1mill_0.8_0.8_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_1mill_0.8_0.8_0.95.csv")
 
 ####
 ## Now repeat for the next set of values
@@ -66,7 +66,7 @@ s2_rr <- 0.8
 
 source("tests_sh/code_to_run_multiple_comparisons_gamma.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_1mill_0.2_0.8_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_1mill_0.2_0.8_0.95.csv")
 
 #############################################
 ## repeat for 10 million
@@ -80,7 +80,7 @@ s2_rr <- 0.2
 # code put elsewhere to try and keep this script a bit tidier
 source("tests_sh/code_to_run_multiple_comparisons_gamma.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_10mill_0.2_0.2_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/gamma_s1doublemean_10mill_0.2_0.2_0.95.csv")
 
 ## Now repeat for the next set of values
 q <- 0.95
@@ -117,7 +117,7 @@ s2_rr <- 0.2
 # code put elsewhere to try and keep this script a bit tidier
 source("tests_sh/code_to_run_multiple_comparisons_lognormal.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_1mill_0.2_0.2_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_1mill_0.2_0.2_0.95.csv")
 
 ## Now repeat for the next set of values
 q <- 0.95
@@ -134,9 +134,9 @@ q <- 0.95
 s1_rr <- 0.2
 s2_rr <- 0.8
 
-source("tests_sh/code_to_run_multiple_comparisons_lognrormal.R")
+source("tests_sh/code_to_run_multiple_comparisons_lognormal.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_1mill_0.2_0.8_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_1mill_0.2_0.8_0.95.csv")
 
 #############################################
 ## repeat for 10 million
@@ -150,7 +150,7 @@ s2_rr <- 0.2
 # code put elsewhere to try and keep this script a bit tidier
 source("tests_sh/code_to_run_multiple_comparisons_lognormal.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_10mill_0.2_0.2_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_10mill_0.2_0.2_0.95.csv")
 
 ## Now repeat for the next set of values
 q <- 0.95
@@ -159,7 +159,7 @@ s2_rr <- 0.8
 
 source("tests_sh/code_to_run_multiple_comparisons_lognormal.R")
 
-write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_10mill_0.8_0.8_0.95.csv")
+#write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_10mill_0.8_0.8_0.95.csv")
 
 ####
 ## Now repeat for the next set of values
@@ -173,3 +173,80 @@ write.csv(out_df, "tests_sh/compare_multiple_multis/ln_s1doublemean_10mill_0.2_0
 
 
 #########################################################################
+
+## Next repeat for the spatial kernel
+
+# Set the kernel parameters
+
+params_s1s1_sp <- c(rayleigh_mean)
+params_s1s2_sp <- c(rayleigh_mean)
+params_s2s2_sp <- c(rayleigh_mean*2)
+
+
+### specify run number, reporting rates and quantiles that we want to test. 
+# can change the parameters as desired
+
+n_runs <- 100
+q <- 0.95
+s1_rr <- 0.2
+s2_rr <- 0.2
+
+# code put elsewhere to try and keep this script a bit tidier
+source("tests_sh/code_to_run_multiple_comparisons_spatial.R")
+
+#write.csv(out_df, "tests_sh/compare_multiple_multis/spatial_s1doublemean_1mill_0.2_0.2_0.95.csv")
+
+## Now repeat for the next set of values
+q <- 0.95
+s1_rr <- 0.8
+s2_rr <- 0.8
+
+source("tests_sh/code_to_run_multiple_comparisons_spatial.R")
+
+#write.csv(out_df, "tests_sh/compare_multiple_multis/spatial_s1doublemean_1mill_0.8_0.8_0.95.csv")
+
+####
+## Now repeat for the next set of values
+q <- 0.95
+s1_rr <- 0.2
+s2_rr <- 0.8
+
+source("tests_sh/code_to_run_multiple_comparisons_spatial.R")
+
+#write.csv(out_df, "tests_sh/compare_multiple_multis/spatial_s1doublemean_1mill_0.2_0.8_0.95.csv")
+
+#############################################
+## repeat for 10 million
+
+n = 10000000
+n_runs <- 100
+q <- 0.95
+s1_rr <- 0.2
+s2_rr <- 0.2
+
+# code put elsewhere to try and keep this script a bit tidier
+source("tests_sh/code_to_run_multiple_comparisons_spatial.R")
+
+#write.csv(out_df, "tests_sh/compare_multiple_multis/spatial_s1doublemean_10mill_0.2_0.2_0.95.csv")
+
+## Now repeat for the next set of values
+q <- 0.95
+s1_rr <- 0.8
+s2_rr <- 0.8
+
+source("tests_sh/code_to_run_multiple_comparisons_spatial.R")
+
+#write.csv(out_df, "tests_sh/compare_multiple_multis/spatial_s1doublemean_10mill_0.8_0.8_0.95.csv")
+
+####
+## Now repeat for the next set of values
+q <- 0.95
+s1_rr <- 0.2
+s2_rr <- 0.8
+
+source("tests_sh/code_to_run_multiple_comparisons_spatial.R")
+
+#write.csv(out_df, "tests_sh/compare_multiple_multis/spatial_s1doublemean_10mill_0.2_0.8_0.95.csv")
+
+
+##########################################################################

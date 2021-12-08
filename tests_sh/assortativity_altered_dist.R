@@ -1,8 +1,10 @@
-## 25/11/2021
+## 01/12/2021
 ## Looking at assortativity
 ## We are going to use all the cases in our data for the numbers. 
 ## Domestic will be species 1 - this is dogs and cats. 
 ## Wildlife will be all wildlife species and will be species 2.
+## We are going to use a larger distance for S2S2 transmissions to represent the
+## larger home ranges of jackals cf dogs
 
 rm(list=ls())
 library(devtools)
@@ -47,9 +49,8 @@ source("tests_sh/get_quantiles_multi_assort.R")
 # number of values that we want to check
 n_grid <- 10
 
-#shape_vect <- round(10^(seq(0,2,length.out = n_grid)),2) # use log values as there is a smaller change for the unit 
-shape_vect <- round(10^(seq(0,1,length.out = n_grid)),2) # use log values as there is a smaller change for the unit 
-#shape_vect <- c(seq(2, 5, length.out = n_grid))
+#shape_vect <- round(10^(seq(0,1,length.out = n_grid)),2) # use log values as there is a smaller change for the unit 
+shape_vect <- c(seq(1.5, 3.0, length.out = n_grid))
 
 # change at higher values.
 shape_vect
@@ -63,49 +64,49 @@ colnames(si_res_df) <- c("all_cut", "s1_cut", "mix_cut", "s2_cut",
 #shape_vect <- shape_vect[1:3]
 
 for(i in 1:length(shape_vect)){
-
-out_gamma <- get_quantiles_multi_assort(d_type = "temporal", distrib = "gamma",
-                                        s1_obs = s1_obs, s2_obs = s2_obs, 
-                                        s1_rr = s1_rr, s2_rr = s2_rr, 
-                                        params_s1s1 = params_s1s1, params_s2s2 = params_s2s2,
-                                        params_s1s2 = params_s1s2,
-                                        n = n, q = q, shape_2 = shape_vect[i])
-
-si_res_df[i,"all_cut"] <- out_gamma$threshold_sim[[1]]
-si_res_df[i, "s1_cut"] <- out_gamma$threshold_s1s1[[1]]
-si_res_df[i, "mix_cut"] <- out_gamma$threshold_s1s2[[1]]
-si_res_df[i, "s2_cut"] <- out_gamma$threshold_s2s2[[1]]
-si_res_df[i, "s1_prop_all"] <- out_gamma$prop_s1s1
-si_res_df[i, "mix_prop_all"] <- out_gamma$prop_s1s2
-si_res_df[i, "s2_prop_all"] <- out_gamma$prop_s2s2
-si_res_df[i, "s1_prop_cut"] <- out_gamma$prop_s1s1_below_quant
-si_res_df[i, "mix_prop_cut"] <- out_gamma$prop_s1s2_below_quant
-si_res_df[i, "s2_prop_cut"] <- out_gamma$prop_s2s2_below_quant
-
+  
+  out_gamma <- get_quantiles_multi_assort(d_type = "temporal", distrib = "gamma",
+                                          s1_obs = s1_obs, s2_obs = s2_obs, 
+                                          s1_rr = s1_rr, s2_rr = s2_rr, 
+                                          params_s1s1 = params_s1s1, params_s2s2 = params_s2s2,
+                                          params_s1s2 = params_s1s2,
+                                          n = n, q = q, shape_2 = shape_vect[i])
+  
+  si_res_df[i,"all_cut"] <- out_gamma$threshold_sim[[1]]
+  si_res_df[i, "s1_cut"] <- out_gamma$threshold_s1s1[[1]]
+  si_res_df[i, "mix_cut"] <- out_gamma$threshold_s1s2[[1]]
+  si_res_df[i, "s2_cut"] <- out_gamma$threshold_s2s2[[1]]
+  si_res_df[i, "s1_prop_all"] <- out_gamma$prop_s1s1
+  si_res_df[i, "mix_prop_all"] <- out_gamma$prop_s1s2
+  si_res_df[i, "s2_prop_all"] <- out_gamma$prop_s2s2
+  si_res_df[i, "s1_prop_cut"] <- out_gamma$prop_s1s1_below_quant
+  si_res_df[i, "mix_prop_cut"] <- out_gamma$prop_s1s2_below_quant
+  si_res_df[i, "s2_prop_cut"] <- out_gamma$prop_s2s2_below_quant
+  
 }
 
 
 ## Now repeat for the spatial kernel 
 
 params_s1s1_spatial <- c(rayleigh_mean)
-params_s2s2_spatial <- c(rayleigh_mean)
-params_s1s2_spatial <- c(rayleigh_mean)
+params_s2s2_spatial <- c(rayleigh_mean*5)
+params_s1s2_spatial <- c(rayleigh_mean*5)
 
 dist_res_df <- as.data.frame(matrix(ncol = 10, nrow = length(shape_vect)))
 row.names(dist_res_df) <- shape_vect
 colnames(dist_res_df) <- c("all_cut", "s1_cut", "mix_cut", "s2_cut",
-                         "s1_prop_all", "mix_prop_all", "s2_prop_all",
-                         "s1_prop_cut", "mix_prop_cut", "s2_prop_cut")
+                           "s1_prop_all", "mix_prop_all", "s2_prop_all",
+                           "s1_prop_cut", "mix_prop_cut", "s2_prop_cut")
 
 for(i in 1:length(shape_vect)){
   
   out_dist <- get_quantiles_multi_assort(d_type = "spatial",
-                                          s1_obs = s1_obs, s2_obs = s2_obs, 
-                                          s1_rr = s1_rr, s2_rr = s2_rr, 
-                                          params_s1s1 = params_s1s1_spatial,
-                                          params_s2s2 = params_s2s2_spatial,
-                                          params_s1s2 = params_s1s2_spatial,
-                                          n = n, q = q, shape_2 = shape_vect[i])
+                                         s1_obs = s1_obs, s2_obs = s2_obs, 
+                                         s1_rr = s1_rr, s2_rr = s2_rr, 
+                                         params_s1s1 = params_s1s1_spatial,
+                                         params_s2s2 = params_s2s2_spatial,
+                                         params_s1s2 = params_s1s2_spatial,
+                                         n = n, q = q, shape_2 = shape_vect[i])
   
   dist_res_df[i,"all_cut"] <- out_dist$threshold_sim[[1]]
   dist_res_df[i, "s1_cut"] <- out_dist$threshold_s1s1[[1]]
@@ -120,17 +121,6 @@ for(i in 1:length(shape_vect)){
   
 }
 
-# save these results
-#write.csv(si_res_df, "tests_sh/assort_si_95_0.6_10mil_313_236.csv")
-#write.csv(dist_res_df, "tests_sh/assort_dist_95_0.6_10mil_313_236.csv")
-#write.csv(si_res_df, "tests_sh/assort_si_95_0.6_10mil_313_236_1_10.csv")
-#write.csv(dist_res_df, "tests_sh/assort_dist_95_0.6_10mil_313_236_1_10.csv")
-#write.csv(si_res_df, "tests_sh/assort_si_95_0.6_10mil_313_236_2_5.csv")
-#write.csv(dist_res_df, "tests_sh/assort_dist_95_0.6_10mil_313_236_2_5.csv")
-
-
-#si_res_df <- read.csv("tests_sh/assort_si_95_0.6_10mil_313_236.csv")
-#dist_res_df <- read.csv("tests_sh/assort_dist_95_0.6_10mil_313_236.csv")
 
 # Now need to run vimes for each of the cut-off values 
 # To do this we need to cuts to be vectors within a list within a list. 
@@ -186,11 +176,11 @@ source("tests_sh/vimes_multi_function.R")
 
 
 res_1 <- vimes_multi(D_all, cutoff = cuts_list[[1]], species_vect = species_vect,
-                                  graph.opt = vimes.graph.opt(col.pal = funky))
+                     graph.opt = vimes.graph.opt(col.pal = funky))
 
 
 vimes_res_list <- purrr::map(cuts_list, vimes_multi, x = D_all, method = c("basic"),log_dens = NULL, 
-           species_vect = species_vect, graph.opt = vimes.graph.opt(col.pal = funky))
+                             species_vect = species_vect, graph.opt = vimes.graph.opt(col.pal = funky))
 
 
 source("tests_sh/transmission_functions.R")
@@ -247,16 +237,16 @@ sim_props <- rename(sim_props, "trans_type" = "rowname")
 trans_res_df <- rbind(trans_res_df, sim_props)
 
 trans_res_df[8, 2:11] <- round(trans_res_df[which(trans_res_df$trans_type == "s1_props_mean"),2:11]*
-  trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
+                                 trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
 trans_res_df[8,1] <- "exp_s1s1"
 
 
 trans_res_df[9, 2:11] <- round(trans_res_df[which(trans_res_df$trans_type == "mixed_props_mean"),2:11]*
-  trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
+                                 trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
 trans_res_df[9,1] <- "exp_mixed"
 
 trans_res_df[10, 2:11] <- round(trans_res_df[which(trans_res_df$trans_type == "s2_props_mean"),2:11]*
-  trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
+                                  trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
 trans_res_df[10,1] <- "exp_s2s2"
 
 trans_res_df[11,2:11] <- round(colSums(trans_res_df[c(8,9,10), 2:11]),0)
@@ -264,14 +254,7 @@ trans_res_df[11,1] <- "exp_total"
 
 trans_res_df[11, 2:11] - trans_res_df[4, 2:11]
 
-# single value
-# Xi_sq = (trans_res_df[which(trans_res_df$trans_type == "s1s1"),"1"] - trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), "1"])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), "1"] +
-#   
-#   (trans_res_df[which(trans_res_df$trans_type == "mixed"),"1"] - trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), "1"])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), "1"] +
-#   
-#   (trans_res_df[which(trans_res_df$trans_type == "s2s2"),"1"] - trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), "1"])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), "1"]
-  
-## Adding to the table
+## Adding Chi squared to the table
 
 trans_res_df[12,1] <-  "Xi_sq"
 
@@ -284,14 +267,13 @@ trans_res_df[12, 2:11] <-
 
 # Plot the values
 plot(shape_vect, trans_res_df[12,2:11], xlab = "Value of shape 2", ylab = "Chi squared value")
+plot(shape_vect, trans_res_df[12,2:11], xlab = "Value of shape 2", ylab = "Chi squared value", ylim = c(0,1000))
 
-
-#write.csv(trans_res_df, "tests_sh/assort_res_shape_1_100.csv")
-#write.csv(trans_res_df, "tests_sh/assort_res_shape_1_10.csv")
-#write.csv(trans_res_df, "tests_sh/assort_res_shape_2_5.csv")
+#write.csv(trans_res_df, "tests_sh/assort_res_shape_1_10_5dist.csv")
+#write.csv(trans_res_df, "tests_sh/assort_res_shape_1.5_3.5_5dist.csv")
 
 par(mfrow = c(2,1))
-shape <- 3.6
+shape <- 2.3
 r <- rbeta(n = 1e4, shape1 = 1, shape2 = shape)
 hist(r, breaks = seq(0,1,by=.02), main = "Species 1", xlab = "", col = "red")
 
@@ -299,58 +281,76 @@ p <- rbeta(n = 1e4, shape1 = shape, shape2 = 1)
 hist(p, breaks = seq(0,1, by = 0.02), main = "Species 2", xlab = "", col ="blue")
 
 ###########################################################
-## Will now extract some results from the vimes results using the assortativity value at 1 and at 3.6
+## Will now extract some results from the vimes results using the assortativity value at 1 and at 2.3
 
 
-# res_1 is using the shape_2 = 1
 
-out_si_3.6 <- get_quantiles_multi_assort(d_type = "temporal", distrib = "gamma",
+out_si_2.3 <- get_quantiles_multi_assort(d_type = "temporal", distrib = "gamma",
                                          s1_obs = s1_obs, s2_obs = s2_obs, 
                                          s1_rr = s1_rr, s2_rr = s2_rr, 
                                          params_s1s1 = params_s1s1, params_s2s2 = params_s2s2,
                                          params_s1s2 = params_s1s2,
-                                         n = n, q = q, shape_2 = 3.6)
+                                         n = n, q = q, shape_2 = 2.3)
 
-out_dist_3.6 <- get_quantiles_multi_assort(d_type = "spatial",
-                                       s1_obs = s1_obs, s2_obs = s2_obs, 
-                                       s1_rr = s1_rr, s2_rr = s2_rr, 
-                                       params_s1s1 = params_s1s1_spatial,
-                                       params_s2s2 = params_s2s2_spatial,
-                                       params_s1s2 = params_s1s2_spatial,
-                                       n = n, q = q, shape_2 = 3.6)
+out_dist_2.3 <- get_quantiles_multi_assort(d_type = "spatial",
+                                           s1_obs = s1_obs, s2_obs = s2_obs, 
+                                           s1_rr = s1_rr, s2_rr = s2_rr, 
+                                           params_s1s1 = params_s1s1_spatial,
+                                           params_s2s2 = params_s2s2_spatial,
+                                           params_s1s2 = params_s1s2_spatial,
+                                           n = n, q = q, shape_2 = 2.3)
 
-cuts_si_3.6 <- c(out_si_3.6$threshold_s1s1, out_si_3.6$threshold_s1s2, out_si_3.6$threshold_s2s2)
-cuts_dist_3.6 <- c(out_dist_3.6$threshold_s1s1, out_dist_3.6$threshold_s1s2, out_dist_3.6$threshold_s2s2)
+cuts_si_2.3 <- c(out_si_2.3$threshold_s1s1, out_si_2.3$threshold_s1s2, out_si_2.3$threshold_s2s2)
+cuts_dist_2.3 <- c(out_dist_2.3$threshold_s1s1, out_dist_2.3$threshold_s1s2, out_dist_2.3$threshold_s2s2)
 
-cuts_list_3.6 <- vector("list", length = 2)
-cuts_list_3.6[[1]] <- cuts_si_3.6
-cuts_list_3.6[[2]] <- cuts_dist_3.6
+cuts_list_2.3 <- vector("list", length = 2)
+cuts_list_2.3[[1]] <- cuts_si_2.3
+cuts_list_2.3[[2]] <- cuts_dist_2.3
+
+cuts_list_2.3
+
+res_2.3 <- vimes_multi(D_all, cutoff = cuts_list_2.3, species_vect = species_vect,
+                       graph.opt = vimes.graph.opt(col.pal = funky))
 
 
-res_3.6 <- vimes_multi(D_all, cutoff = cuts_list_3.6, species_vect = species_vect,
-                     graph.opt = vimes.graph.opt(col.pal = funky))
+######
+out_si_1 <- get_quantiles_multi_assort(d_type = "temporal", distrib = "gamma",
+                                         s1_obs = s1_obs, s2_obs = s2_obs, 
+                                         s1_rr = s1_rr, s2_rr = s2_rr, 
+                                         params_s1s1 = params_s1s1, params_s2s2 = params_s2s2,
+                                         params_s1s2 = params_s1s2,
+                                         n = n, q = q, shape_2 = 1)
+
+out_dist_1 <- get_quantiles_multi_assort(d_type = "spatial",
+                                           s1_obs = s1_obs, s2_obs = s2_obs, 
+                                           s1_rr = s1_rr, s2_rr = s2_rr, 
+                                           params_s1s1 = params_s1s1_spatial,
+                                           params_s2s2 = params_s2s2_spatial,
+                                           params_s1s2 = params_s1s2_spatial,
+                                           n = n, q = q, shape_2 = 1)
+
+cuts_si_1 <- c(out_si_1$threshold_s1s1, out_si_1$threshold_s1s2, out_si_1$threshold_s2s2)
+cuts_dist_1 <- c(out_dist_1$threshold_s1s1, out_dist_1$threshold_s1s2, out_dist_1$threshold_s2s2)
+
+cuts_list_1 <- vector("list", length = 2)
+cuts_list_1[[1]] <- cuts_si_1
+cuts_list_1[[2]] <- cuts_dist_1
+
+cuts_list_1
+
+res_1 <- vimes_multi(D_all, cutoff = cuts_list_1, species_vect = species_vect,
+                       graph.opt = vimes.graph.opt(col.pal = funky))
 
 
 
 
 res_1$clusters$size  #tells us the the size of the assigned clusters
 range(res_1$clusters$size) #the range of cluster sizes
-hist(res_1$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,9,1),
+hist(res_1$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,36,1),
      main = "Histogram of cluster sizes")$counts
 
 res_1$clusters$K # number of clusters including singletons
 res_1$cutoff  # the cutoff values that were used. 
-
-## Would be good to be able to plot just the non - singletons and to colour them by species
-## presently only worked out how to colour - can't seem to drop the singletons
-# 
-# graph_1 <- multi_res$graph  # assign the graph to an object
-# class(graph_1) # check it's an igraph
-# 
-  
-# # And plot 
-# plot(graph_1, vertex.label = "",
-#      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
 
 
 ###########################################################################
@@ -421,23 +421,24 @@ Isolated_1 = which(degree(graph_1)==0)
 g_del = delete.vertices(graph_1, Isolated_1)
 L02 = L0_1[-Isolated_1,]
 
+dev.off()
 plot(g_del, layout=L02, vertex.label = "", 
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
 
 
 ###########################################
-## Repeat for the results with shape_2 = 3.6
+## Repeat for the results with shape_2 = 2.3
 
-res_3.6_df <- as.data.frame(res_3.6$clusters$membership) # This is the cluster that they are assigned to. 
-colnames(res_3.6_df) <- "cluster_memb"
+res_2.3_df <- as.data.frame(res_2.3$clusters$membership) # This is the cluster that they are assigned to. 
+colnames(res_2.3_df) <- "cluster_memb"
 
-cs_3.6 <- trans_table_fun(res_3.6_df)
+cs_2.3 <- trans_table_fun(res_2.3_df)
 
-csl_3.6 <- cs_3.6 %>%
+csl_2.3 <- cs_2.3 %>%
   group_by(total, trans_type)%>%
   count()
 
-gg_res_3.6 <- ggplot(csl_3.6, aes(x = total, y = n, fill = trans_type))  +
+gg_res_2.3 <- ggplot(csl_2.3, aes(x = total, y = n, fill = trans_type))  +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = own_cols, name = "Transmission type",
                     #guide = guide_legend(reverse=TRUE),
@@ -451,47 +452,45 @@ gg_res_3.6 <- ggplot(csl_3.6, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
-gg_res_3.6
+  labs(title = "degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
+gg_res_2.3
 
 ###############################################################################
 # extracting the transmissions
 
 # We could just get all the edges from the graph we need to use the full data anyway
 
-g3.6_df<- igraph::as_data_frame(res_3.6$graph) # This is useful.
+g2.3_df<- igraph::as_data_frame(res_2.3$graph) # This is useful.
 
-g3.6_df <- g3.6_df[,c("from", "to")]
+g2.3_df <- g2.3_df[,c("from", "to")]
 
-res_3.6_deets <- cases_deets_function(g3.6_df)
-res_3.6_trans <- res_3.6_deets$transmissions
-res_3.6_props <- res_3.6_deets$props_df
-table(res_3.6_trans$trans)
+res_2.3_deets <- cases_deets_function(g2.3_df)
+res_2.3_trans <- res_2.3_deets$transmissions
+res_2.3_props <- res_2.3_deets$props_df
+table(res_2.3_trans$trans)
 
 #########################################################################################
 
 # create a subgraph of the i-graph 
-graph_3.6 <- res_3.6$graph
+graph_2.3 <- res_2.3$graph
 # This is the original plot
-L0_3.6 = layout_with_fr(graph_3.6)
+L0_2.3 = layout_with_fr(graph_2.3)
 
 # Set the colours of the cases
-graph_3.6 <- igraph::set.vertex.attribute(graph_3.6, 'species', value = graph_species_vect) # assign the species to the graph 
+graph_2.3 <- igraph::set.vertex.attribute(graph_2.3, 'species', value = graph_species_vect) # assign the species to the graph 
 
-Isolated_3.6 = which(degree(graph_3.6)==0)
-g_del_3.6 = delete.vertices(graph_3.6, Isolated_3.6)
-L02_3.6 = L0_3.6[-Isolated_3.6,]
+Isolated_2.3 = which(degree(graph_2.3)==0)
+g_del_2.3 = delete.vertices(graph_2.3, Isolated_2.3)
+L02_2.3 = L0_2.3[-Isolated_2.3,]
 
-plot(g_del_3.6, layout=L02_3.6, vertex.label = "", 
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.6, "species")))])
-
-
-
-
+plot(g_del_2.3, layout=L02_2.3, vertex.label = "", 
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_2.3, "species")))])
 
 
 
 #####################
+
+# Below here not really needed
 
 # Get the proportions from each of the vimes results
 
@@ -553,7 +552,7 @@ sim_props[,"s2_props_mean"] <- rowMeans(sim_props[,c("s2_prop_all_si", "s2_prop_
 sim_props <- as.data.frame(t(sim_props))
 sim_props <- sim_props %>% rownames_to_column 
 sim_props <- sim_props[which(sim_props$rowname %in% c("s1_props_mean", "mixed_props_mean",
-                                              "s2_props_mean")),]
+                                                      "s2_props_mean")),]
 
 ## Look at getting a chi square value for the scenarios
 Xi_sq = (prop_res_summary[1,"1"] - sim_props[1,"1"])^2/ sim_props[1,"1"] +
