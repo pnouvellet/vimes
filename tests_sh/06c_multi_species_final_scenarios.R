@@ -27,8 +27,8 @@ s1_obs <- 313 # no of cases observed for dogs/species 1
 s2_obs <- 236 # no of cases observed for jackals/species 2
 
 ## Specify the reporting rates of the different species. 
-s1_rr <- 0.50 # rr for dogs/species 1
-s2_rr <- 0.25 # rr for jackals/species 2
+s1_rr <- 0.75 # rr for dogs/species 1
+s2_rr <- 0.50 # rr for jackals/species 2
 
 n = 10000000 # set number of simulations - using 10 million initially #as algorithm very quick
 
@@ -51,7 +51,7 @@ source("tests_sh/get_quantiles_multi_assort.R")
 
 # We want to run a number of different values for the shape_2 parameter.
 # number of values that we want to check
-n_grid <- 10
+n_grid <- 91
 shape_vect <- seq(1,10,length.out = n_grid) # use log values as there is a smaller change for the unit 
 
 # change at higher values.
@@ -123,12 +123,12 @@ for(i in 1:length(shape_vect)){
 }
 
 # save these results
-write.csv(si_res_df, "tests_sh/final_scenarios/si_95_0.5_1_10.csv")
-write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.5_1_10.csv")
+#write.csv(si_res_df, "tests_sh/final_scenarios/si_95_0.75_0.5_1_100.csv")
+#write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.75_0.5_1_100.csv")
 
 
-#si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.5_1_10.csv")
-#dist_res_df <- read.csv("tests_sh/final_scenarios/assort_dist_95_0.5_1_10.csv")
+#si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.75_0.5_1_100.csv")
+#dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.75_0.5_1_100.csv")
 
 # Now need to run vimes for each of the cut-off values 
 # To do this we need to cuts to be vectors within a list within a list. 
@@ -203,7 +203,7 @@ trans_res_df <- purrr::reduce(vimes_res_trans, left_join, by = "Var1")
 colnames(trans_res_df) <- c("trans_type", as.character(shape_vect))  
 trans_res_df$trans_type <- as.character(trans_res_df$trans_type)
 trans_res_df[4,1] <- "total"
-trans_res_df[4,2:11] <- colSums(trans_res_df[1:3, 2:11])
+trans_res_df[4,2:92] <- colSums(trans_res_df[1:3, 2:92])
 
 
 ### Now get the proportions from the simulations
@@ -229,55 +229,70 @@ sim_props <- rename(sim_props, "trans_type" = "rowname")
 
 trans_res_df <- rbind(trans_res_df, sim_props)
 
-trans_res_df[8, 2:11] <- round(trans_res_df[which(trans_res_df$trans_type == "s1_props_mean"),2:11]*
-                                 trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
+trans_res_df[8, 2:92] <- round(trans_res_df[which(trans_res_df$trans_type == "s1_props_mean"),2:92]*
+                                 trans_res_df[which(trans_res_df$trans_type == "total"),2:92],2)
 trans_res_df[8,1] <- "exp_s1s1"
 
 
-trans_res_df[9, 2:11] <- round(trans_res_df[which(trans_res_df$trans_type == "mixed_props_mean"),2:11]*
-                                 trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
+trans_res_df[9, 2:92] <- round(trans_res_df[which(trans_res_df$trans_type == "mixed_props_mean"),2:92]*
+                                 trans_res_df[which(trans_res_df$trans_type == "total"),2:92],2)
 trans_res_df[9,1] <- "exp_mixed"
 
-trans_res_df[10, 2:11] <- round(trans_res_df[which(trans_res_df$trans_type == "s2_props_mean"),2:11]*
-                                  trans_res_df[which(trans_res_df$trans_type == "total"),2:11],2)
+trans_res_df[10, 2:92] <- round(trans_res_df[which(trans_res_df$trans_type == "s2_props_mean"),2:92]*
+                                  trans_res_df[which(trans_res_df$trans_type == "total"),2:92],2)
 trans_res_df[10,1] <- "exp_s2s2"
 
-trans_res_df[11,2:11] <- round(colSums(trans_res_df[c(8,9,10), 2:11]),0)
+trans_res_df[11,2:92] <- round(colSums(trans_res_df[c(8,9,10), 2:92]),0)
 trans_res_df[11,1] <- "exp_total"
 
-trans_res_df[11, 2:11] - trans_res_df[4, 2:11]
+trans_res_df[11, 2:92] - trans_res_df[4, 2:92] # check that these are all 0
 
-# single value
-# Xi_sq = (trans_res_df[which(trans_res_df$trans_type == "s1s1"),"1"] - trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), "1"])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), "1"] +
-#   
-#   (trans_res_df[which(trans_res_df$trans_type == "mixed"),"1"] - trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), "1"])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), "1"] +
-#   
-#   (trans_res_df[which(trans_res_df$trans_type == "s2s2"),"1"] - trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), "1"])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), "1"]
 
 ## Adding chi-sqaured to the table
 
 trans_res_df[12,1] <-  "Xi_sq"
 
-trans_res_df[12, 2:11] <-  
-  (trans_res_df[which(trans_res_df$trans_type == "s1s1"),2:11] - trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), 2:11])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), 2:11] +
+trans_res_df[12, 2:92] <-  
+  (trans_res_df[which(trans_res_df$trans_type == "s1s1"),2:92] - trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), 2:92])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s1s1"), 2:92] +
   
-  (trans_res_df[which(trans_res_df$trans_type == "mixed"),2:11] - trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), 2:11])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), 2:11] +
+  (trans_res_df[which(trans_res_df$trans_type == "mixed"),2:92] - trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), 2:92])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_mixed"), 2:92] +
   
-  (trans_res_df[which(trans_res_df$trans_type == "s2s2"),2:11] - trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), 2:11])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), 2:11]
+  (trans_res_df[which(trans_res_df$trans_type == "s2s2"),2:92] - trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), 2:92])^2/ trans_res_df[which(trans_res_df$trans_type == "exp_s2s2"), 2:92]
 
 # Plot the values
-plot(shape_vect, trans_res_df[12,2:11], xlab = "Value of shape 2", ylab = "Chi squared value")
+plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi squared value")
+
+## also want the observed proportions
+trans_res_df[13,2:92] <- trans_res_df[2,2:92]/trans_res_df[4,2:92]
+trans_res_df[13,1] <- "obs_prop_s1s1"
+
+trans_res_df[14,2:92] <- trans_res_df[1,2:92]/trans_res_df[4,2:92]
+trans_res_df[14,1] <- "obs_prop_mixed"
+
+trans_res_df[15,2:92] <- trans_res_df[3,2:92]/trans_res_df[4,2:92]
+trans_res_df[15,1] <- "obs_prop_s2s2"
+
+sum(trans_res_df[13:15, 2:92])
 
 
 #########################################################################
-####  Now narrow down the shape paramter. 
-#### Repeat the above process with a narrower range
 
+# Find the column that has the lowest value for the chi-squared test
 
+colnames(trans_res_df)[apply(trans_res_df, 1, which.min)][12]
 
+grep("3.8", colnames(trans_res_df))
+
+trans_res_df[,30]
+
+#This shows the column with the value of 3.8 has the lowest chi sqyared value
+# We can extract this from our vimes results list. 
+# Need to know which of the results we want. This will correspond to the number in the shape_vect
+which(shape_vect == 3.8)
+shape_vect[29]
 
 par(mfrow = c(2,1))
-shape <- 3.6
+shape <- 3.8
 r <- rbeta(n = 1e4, shape1 = 1, shape2 = shape)
 hist(r, breaks = seq(0,1,by=.02), main = "Species 1", xlab = "", col = "red")
 
@@ -285,61 +300,25 @@ p <- rbeta(n = 1e4, shape1 = shape, shape2 = 1)
 hist(p, breaks = seq(0,1, by = 0.02), main = "Species 2", xlab = "", col ="blue")
 
 ###########################################################
-## Will now extract some results from the vimes results using the assortativity value at 1 and at 3.6
+## Will now extract some results from the vimes results using the assortativity value at 1 and at 3.8
 
+res_1 <- vimes_res_list[[1]]
+res_1$cutoff
 
-# res_1 is using the shape_2 = 1
+res_3.8 <- vimes_res_list[[29]]
+res_3.8$cutoff
 
-out_si_3.6 <- get_quantiles_multi_assort(d_type = "temporal", distrib = "gamma",
-                                         s1_obs = s1_obs, s2_obs = s2_obs, 
-                                         s1_rr = s1_rr, s2_rr = s2_rr, 
-                                         params_s1s1 = params_s1s1, params_s2s2 = params_s2s2,
-                                         params_s1s2 = params_s1s2,
-                                         n = n, q = q, shape_2 = 3.6)
+### Results with shape = 1
 
-out_dist_3.6 <- get_quantiles_multi_assort(d_type = "spatial",
-                                           s1_obs = s1_obs, s2_obs = s2_obs, 
-                                           s1_rr = s1_rr, s2_rr = s2_rr, 
-                                           params_s1s1 = params_s1s1_spatial,
-                                           params_s2s2 = params_s2s2_spatial,
-                                           params_s1s2 = params_s1s2_spatial,
-                                           n = n, q = q, shape_2 = 3.6)
+table(res_1$clusters$size)  #tells us the the size of the assigned clusters
+res_1$clusters$K
 
-cuts_si_3.6 <- c(out_si_3.6$threshold_s1s1, out_si_3.6$threshold_s1s2, out_si_3.6$threshold_s2s2)
-cuts_dist_3.6 <- c(out_dist_3.6$threshold_s1s1, out_dist_3.6$threshold_s1s2, out_dist_3.6$threshold_s2s2)
-
-cuts_list_3.6 <- vector("list", length = 2)
-cuts_list_3.6[[1]] <- cuts_si_3.6
-cuts_list_3.6[[2]] <- cuts_dist_3.6
-
-
-res_3.6 <- vimes_multi(D_all, cutoff = cuts_list_3.6, species_vect = species_vect,
-                       graph.opt = vimes.graph.opt(col.pal = funky))
-
-
-
-
-res_1$clusters$size  #tells us the the size of the assigned clusters
 range(res_1$clusters$size) #the range of cluster sizes
 hist(res_1$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,9,1),
-     main = "Histogram of cluster sizes")$counts
+     main = "Histogram of cluster sizes")
 
 res_1$clusters$K # number of clusters including singletons
-res_1$cutoff  # the cutoff values that were used. 
-
-## Would be good to be able to plot just the non - singletons and to colour them by species
-## presently only worked out how to colour - can't seem to drop the singletons
-# 
-# graph_1 <- multi_res$graph  # assign the graph to an object
-# class(graph_1) # check it's an igraph
-# 
-
-# # And plot 
-# plot(graph_1, vertex.label = "",
-#      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
-
-
-###########################################################################
+mean(res_1$clusters$size)
 # The cluster membership can be joined with the SE_Tanz data to create a new data set. 
 
 res_1_df <- as.data.frame(res_1$clusters$membership) # This is the cluster that they are assigned to. 
@@ -352,6 +331,16 @@ csl_1 <- cs_1 %>%
   group_by(total, trans_type)%>%
   count()
 
+csl_1_trios_up <- csl_1[which(csl_1$total >=3),]
+
+sum(csl_1_trios_up$n) # so 24 clusters of >= 3 in total.
+sum(csl_1_trios_up[which(csl_1_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])
+
+# get the proportion
+sum(csl_1_trios_up[which(csl_1_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])/
+  sum(csl_1_trios_up$n) # so 24 clusters of >= 3 in total.
+
+# plot of the clusters
 own_cols <- c("red", "purple", "blue")
 own_labels <- c("Domestic only", "Mixed", "Wildlife only")
 
@@ -370,10 +359,10 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
   labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
-gg_res_1
 
-###############################################################################
-# extracting the transmissions
+
+
+# ALternative way of extracting the transmissions
 
 # We could just get all the edges from the graph we need to use the full data anyway
 
@@ -391,39 +380,64 @@ table(res_1_trans$trans)
 
 # create a subgraph of the i-graph 
 library(igraph)
+dev.off()
+
+species_vect_graph <- vd$Species # get the species from the cases
+species_vect_graph <- droplevels(species_vect_graph)
+levels(species_vect_graph) 
+pal <- c("red", "blue", "red") # set a colour palette.Make sure the colours match the species from the species vector
+
+
 
 graph_1 <- res_1$graph
-# This is the original plot
-L0_1 = layout_with_fr(graph_1)
+graph_1 <- igraph::as_data_frame(graph_1)
+graph_1 <- igraph::graph_from_data_frame(graph_1, directed = F)
+rn <- as.numeric(get.vertex.attribute(graph_1)$name)
+graph_1 <-  igraph::set.vertex.attribute(graph_1, 'species', value = species_vect_graph[rn]) # assign the species to the graph 
 
-#plot(graph_1, layout = L0, vertex.label = "") # all cases including singletons
-# Set the colours of the cases
-graph_species_vect <- vd$Species # get the species from the cases
-graph_1 <- igraph::set.vertex.attribute(graph_1, 'species', value = graph_species_vect) # assign the species to the graph 
-pal <- c("red", "blue", "yellow") # set a colour palette.
-
-
-Isolated_1 = which(degree(graph_1)==0)
-g_del = delete.vertices(graph_1, Isolated_1)
-L02 = L0_1[-Isolated_1,]
-
-plot(g_del, layout=L02, vertex.label = "", 
+plot(graph_1, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
 
 
+
+
 ###########################################
-## Repeat for the results with shape_2 = 3.6
+## Repeat for the results with shape_2 = 3.8
 
-res_3.6_df <- as.data.frame(res_3.6$clusters$membership) # This is the cluster that they are assigned to. 
-colnames(res_3.6_df) <- "cluster_memb"
+table(res_3.8$clusters$size)  #tells us the the size of the assigned clusters
+res_3.8$clusters$K
+mean(res_3.8$clusters$size)
 
-cs_3.6 <- trans_table_fun(res_3.6_df)
+range(res_3.8$clusters$size) #the range of cluster sizes
+hist(res_3.8$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,9,1),
+     main = "Histogram of cluster sizes")
 
-csl_3.6 <- cs_3.6 %>%
+mean(res_3.8$clusters$size) # number of clusters including singletons
+
+# The cluster membership can be joined with the SE_Tanz data to create a new data set. 
+
+res_3.8_df <- as.data.frame(res_3.8$clusters$membership) # This is the cluster that they are assigned to. 
+colnames(res_3.8_df) <- "cluster_memb"
+
+cs_3.8 <- trans_table_fun(res_3.8_df)
+
+csl_3.8 <- cs_3.8 %>%
   group_by(total, trans_type)%>%
   count()
 
-gg_res_3.6 <- ggplot(csl_3.6, aes(x = total, y = n, fill = trans_type))  +
+csl_3.8_trios_up <- csl_3.8[which(csl_3.8$total >=3),]
+
+sum(csl_3.8_trios_up$n) # so 24 clusters of >= 3 in total.
+sum(csl_3.8_trios_up[which(csl_3.8_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])
+
+# get the proportion
+sum(csl_3.8_trios_up[which(csl_3.8_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])/
+  sum(csl_3.8_trios_up$n) # so 24 clusters of >= 3 in total.
+
+# plot of the clusters
+
+
+gg_res_3.8 <- ggplot(csl_3.8, aes(x = total, y = n, fill = trans_type))  +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = own_cols, name = "Transmission type",
                     #guide = guide_legend(reverse=TRUE),
@@ -437,119 +451,33 @@ gg_res_3.6 <- ggplot(csl_3.6, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
-gg_res_3.6
+  labs(title = "Degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
 
-###############################################################################
-# extracting the transmissions
-
-# We could just get all the edges from the graph we need to use the full data anyway
-
-g3.6_df<- igraph::as_data_frame(res_3.6$graph) # This is useful.
-
-g3.6_df <- g3.6_df[,c("from", "to")]
-
-res_3.6_deets <- cases_deets_function(g3.6_df)
-res_3.6_trans <- res_3.6_deets$transmissions
-res_3.6_props <- res_3.6_deets$props_df
-table(res_3.6_trans$trans)
 
 #########################################################################################
 
 # create a subgraph of the i-graph 
-graph_3.6 <- res_3.6$graph
-# This is the original plot
-L0_3.6 = layout_with_fr(graph_3.6)
 
-# Set the colours of the cases
-graph_3.6 <- igraph::set.vertex.attribute(graph_3.6, 'species', value = graph_species_vect) # assign the species to the graph 
+graph_3.8 <- res_3.8$graph
+graph_3.8 <- igraph::as_data_frame(graph_3.8)
+graph_3.8 <- igraph::graph_from_data_frame(graph_3.8, directed = F)
+rn <- as.numeric(get.vertex.attribute(graph_3.8)$name)
+graph_3.8 <-  igraph::set.vertex.attribute(graph_3.8, 'species', value = species_vect_graph[rn]) # assign the species to the graph 
 
-Isolated_3.6 = which(degree(graph_3.6)==0)
-g_del_3.6 = delete.vertices(graph_3.6, Isolated_3.6)
-L02_3.6 = L0_3.6[-Isolated_3.6,]
-
-plot(g_del_3.6, layout=L02_3.6, vertex.label = "", 
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.6, "species")))])
+plot(graph_3.8, vertex.label ="", vertex.size = 10,
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.8, "species")))])
 
 
+##########
+## put the two bar plots side by side.
+ggpubr::ggarrange(gg_res_1, gg_res_3.8, ncol = 2, common.legend = T, legend = "bottom")
 
-
-
-
-
-#####################
-
-# Get the proportions from each of the vimes results
-
-props_fun <- function(x){
-  graph <- x[["graph"]]
-  graph_df <- igraph::as_data_frame(graph)
-  props <- cases_deets_function(graph_df)
-  props$props_df
-}
-
-
-vimes_res_props <- purrr::map(vimes_res_list, props_fun)
-vimes_res_props[[1]]
-vt <- vimes
-## Fill a dataframe with these proportions
-
-prop_res_df <- purrr::reduce(vimes_res_props, left_join, by = "trans_type")
-colnames(prop_res_df) <- c("trans_type", as.character(shape_vect))  
-
-prop_res_summary <- as.data.frame(matrix(ncol = ncol(prop_res_df), nrow = 3))
-colnames(prop_res_summary) <- colnames(prop_res_df)  
-prop_res_summary[,"trans_type"] <- c("s1s1", "mixed", "s2s2")
-
-s1s1 <- c("dog-dog", "dog-cat", "cat-cat", "cat-dog")
-mixed <- c("dog-wild", "cat-wild", "wild-dog", "wild-cat")
-
-#prop_res_df %>% filter(trans_type %in% s1s1) %>%
-#  dplyr::select(!trans_type) %>%
-#  colSums(.)
-
-prop_res_summary[which(prop_res_summary == "s1s1"),2:11] <- prop_res_df %>% 
-  filter(trans_type %in% s1s1) %>%
-  dplyr::select(!trans_type) %>%
-  colSums(.)
-
-prop_res_summary[which(prop_res_summary == "mixed"),2:11] <- prop_res_df %>% 
-  dplyr::filter(trans_type %in% mixed) %>%
-  dplyr::select(!trans_type) %>%
-  colSums(.)
-
-prop_res_summary[which(prop_res_summary == "s2s2"),2:11] <- prop_res_df %>% 
-  filter(trans_type == "wild-wild") %>%
-  dplyr::select(!trans_type) %>%
-  colSums(.)
-
-### Now get the proportions from the simulations
-colnames(si_res_df) <- paste(colnames(si_res_df), "si", sep = "_")
-colnames(dist_res_df) <- paste(colnames(dist_res_df), "dist", sep = "_")
-
-sim_props <- si_res_df %>% 
-  cbind(dist_res_df) %>%
-  dplyr::select(s1_prop_all_si, mix_prop_all_si, s2_prop_all_si, 
-                s1_prop_all_dist, mix_prop_all_dist, s2_prop_all_dist)
-
-sim_props[,"s1_props_mean"] <- rowMeans(sim_props[,c("s1_prop_all_si", "s1_prop_all_dist")])
-sim_props[,"mixed_props_mean"] <- rowMeans(sim_props[,c("mix_prop_all_si", "mix_prop_all_dist")])
-sim_props[,"s2_props_mean"] <- rowMeans(sim_props[,c("s2_prop_all_si", "s2_prop_all_dist")])
-
-sim_props <- as.data.frame(t(sim_props))
-sim_props <- sim_props %>% rownames_to_column 
-sim_props <- sim_props[which(sim_props$rowname %in% c("s1_props_mean", "mixed_props_mean",
-                                                      "s2_props_mean")),]
-
-## Look at getting a chi square value for the scenarios
-Xi_sq = (prop_res_summary[1,"1"] - sim_props[1,"1"])^2/ sim_props[1,"1"] +
-  
-  (prop_res_summary[2,"1"] - sim_props[2,"1"])^2/sim_props[2,"1"] +
-  
-  (prop_res_summary[3,"1"] - sim_props[3,"1"])^2/ sim_props[3,"1"]
-
-
-### However what we actually need is the number of transmissions rather than the proportions.
-
-a1 <- cases_deets_function(res_1)
+## and pop the igraphs side-by-side
+par(mfrow = c(1,2))
+set.seed(2)
+plot(graph_1, vertex.label ="", vertex.size = 10,
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
+set.seed(2)
+plot(graph_3.8, vertex.label ="", vertex.size = 10,
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.8, "species")))])
 
