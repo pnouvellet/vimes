@@ -127,8 +127,8 @@ for(i in 1:length(shape_vect)){
 #write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.5_0.25_1_10.csv")
 
 
-#si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.5_0.25_1_10.csv")
-#dist_res_df <- read.csv("tests_sh/final_scenarios/assort_dist_95_0.5_0.25_1_10.csv")
+si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.5_0.25_1_10.csv")
+dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.5_0.25_1_10.csv")
 
 # Now need to run vimes for each of the cut-off values 
 # To do this we need to cuts to be vectors within a list within a list. 
@@ -224,8 +224,12 @@ sim_props <- sim_props %>% rownames_to_column
 sim_props <- sim_props[which(sim_props$rowname %in% c("s1_props_mean", "mixed_props_mean",
                                                       "s2_props_mean")),]
 
-sim_props$rowname <- as.character(sim_props$rowname)
-sim_props <- rename(sim_props, "trans_type" = "rowname")
+# use the below if running from start
+#sim_props$rowname <- as.character(sim_props$rowname)
+#sim_props <- rename(sim_props, "trans_type" = "rowname")
+
+# or this if reading in the csv.
+colnames(sim_props) <- colnames(trans_res_df)
 
 trans_res_df <- rbind(trans_res_df, sim_props)
 
@@ -274,6 +278,13 @@ trans_res_df[15,2:92] <- trans_res_df[3,2:92]/trans_res_df[4,2:92]
 trans_res_df[15,1] <- "obs_prop_s2s2"
 
 sum(trans_res_df[13:15, 2:92])
+
+#write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_b.csv")
+
+plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi squared value",
+     ylim=c(0,5))
+
+range(trans_res_df[12,2:92])
 
 
 #########################################################################

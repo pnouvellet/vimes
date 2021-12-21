@@ -6,7 +6,7 @@
 ## We are going to use a larger distance for S2S2 transmissions to represent the
 ## larger home ranges of jackals cf dogs
 
-## Reporting probability of 0.50 for group 1 and 0.50 for group 2
+## Reporting probability of 0.25 for group 1 and 0.10 for group 2
 ## with the parameters the same for both for the serial interval
 
 # for the spatial kernel we will have 5*mean for S2S2 but keep the baseline mean for the S1S1 and mixed 
@@ -29,8 +29,8 @@ s1_obs <- 313 # no of cases observed for dogs/species 1
 s2_obs <- 236 # no of cases observed for jackals/species 2
 
 ## Specify the reporting rates of the different species. 
-s1_rr <- 0.50 # rr for dogs/species 1
-s2_rr <- 0.50 # rr for jackals/species 2
+s1_rr <- 0.25 # rr for dogs/species 1
+s2_rr <- 0.10 # rr for jackals/species 2
 
 n = 10000000 # set number of simulations - using 10 million initially #as algorithm very quick
 
@@ -126,12 +126,12 @@ for(i in 1:length(shape_vect)){
 }
 
 # save these results
-#write.csv(si_res_df, "tests_sh/final_scenarios/si_95_0.50_0.50_1_100_5mean.csv")
-#write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.50_0.50_1_100_5mean.csv")
+#write.csv(si_res_df, "tests_sh/final_scenarios/si_95_0.25_0.10_1_100_5mean.csv")
+#write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.25_0.10_1_100_5mean.csv")
 
 
-si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.50_0.50_1_100_5mean.csv")
-dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.50_0.50_1_100_5mean.csv")
+si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.25_0.10_1_100_5mean.csv")
+dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.25_0.10_1_100_5mean.csv")
 
 # Now need to run vimes for each of the cut-off values 
 # To do this we need to cuts to be vectors within a list within a list. 
@@ -230,8 +230,6 @@ sim_props <- sim_props[which(sim_props$rowname %in% c("s1_props_mean", "mixed_pr
 sim_props$rowname <- as.character(sim_props$rowname)
 sim_props <- rename(sim_props, "trans_type" = "rowname")
 
-colnames(sim_props)[2:92] <- shape_vect
-
 trans_res_df <- rbind(trans_res_df, sim_props)
 
 trans_res_df[8, 2:92] <- round(trans_res_df[which(trans_res_df$trans_type == "s1_props_mean"),2:92]*
@@ -278,8 +276,11 @@ trans_res_df[15,1] <- "obs_prop_s2s2"
 
 sum(trans_res_df[13:15, 2:92])
 
-#write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_f.csv")
+range(trans_res_df[12,2:92])
+plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi squared value",
+     ylim = c(0,5))
 
+#write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_h.csv")
 
 
 #########################################################################

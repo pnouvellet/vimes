@@ -128,8 +128,8 @@ for(i in 1:length(shape_vect)){
 #write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.50_0.25_1_100_5mean.csv")
 
 
-#si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.50_0.25_1_100_5mean.csv")
-#dist_res_df <- read.csv("tests_sh/final_scenarios/adist_95_0.50_0.25_1_100_5mean.csv")
+si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.50_0.25_1_100_5mean.csv")
+dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.50_0.25_1_100_5mean.csv")
 
 # Now need to run vimes for each of the cut-off values 
 # To do this we need to cuts to be vectors within a list within a list. 
@@ -225,8 +225,12 @@ sim_props <- sim_props %>% rownames_to_column
 sim_props <- sim_props[which(sim_props$rowname %in% c("s1_props_mean", "mixed_props_mean",
                                                       "s2_props_mean")),]
 
-sim_props$rowname <- as.character(sim_props$rowname)
-sim_props <- rename(sim_props, "trans_type" = "rowname")
+# use the below if running code from the start. 
+# sim_props$rowname <- as.character(sim_props$rowname)
+# sim_props <- rename(sim_props, "trans_type" = "rowname")
+
+# or this if reading the saved csv
+colnames(sim_props) <- colnames(trans_res_df)
 
 trans_res_df <- rbind(trans_res_df, sim_props)
 
@@ -275,6 +279,12 @@ trans_res_df[15,1] <- "obs_prop_s2s2"
 
 sum(trans_res_df[13:15, 2:92])
 
+#write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_d.csv")
+
+plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi squared value", 
+     ylim = c(0,5))
+
+range(trans_res_df[12,2:92])
 
 #########################################################################
 
@@ -498,4 +508,32 @@ plot(graph_1, vertex.label ="", vertex.size = 8, edge.width = 2.5,
 set.seed(2)
 plot(graph_3, vertex.label ="", vertex.size = 8, edge.width = 2.5,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3, "species")))])
+
+
+### plots for the thesis
+
+gg_res_scen_4 <-  ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = own_cols, name = "Transmission type",
+                    #guide = guide_legend(reverse=TRUE),
+                    labels = own_labels) +
+  theme_classic() +
+  theme(axis.title.x = element_text(size=12, face="plain"),
+        axis.title.y = element_text(size=12, face="plain"),
+        axis.text.x  = element_text(size = 12, face = "plain"),
+        axis.text.y = element_text(size = 12, face = "plain"),
+        axis.ticks.length = unit(.2, "cm"),
+        legend.text = element_text(size = 10, face = "plain"),
+        legend.title = element_text(size = 10, face = "plain"),
+        #legend.position = c(0.8,0.7)) +
+        legend.position = "bottom") +
+  xlim(0,65) +
+  ylim(0,35) + 
+  labs(title = "C", y = "Number of clusters", x = "Size of cluster") 
+
+gg_res_scen_4
+
+ggsave(here::here("tests_sh/plots", "cluster_size_barplot_C.pdf"), gg_res_scen_4, width = 6, height = 4)
+
+
 

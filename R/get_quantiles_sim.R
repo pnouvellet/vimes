@@ -54,7 +54,8 @@ get_quantiles_sim <- function(d_type, n, rrpi, q, distrib = "gamma", params) {
       gam_parms <- epitrix::gamma_mucv2shapescale(mu = params[1], cv = params[2]/params[1])
       
       all_ind <- data.frame(Case_no = seq(1, n, 1),
-                            distance = c(0,rgamma(n-1, shape = gam_parms$shape, scale = gam_parms$scale)), # adding location of (0,0) for first dog
+                            #distance = c(0,rgamma(n-1, shape = gam_parms$shape, scale = gam_parms$scale)), # adding location of (0,0) for first dog
+                            distance = rgamma(n, shape = gam_parms$shape, scale = gam_parms$scale), # adding location of (0,0) for first dog
                             detected = runif(n, 0, 1) <= rrpi)
       
     }
@@ -69,12 +70,16 @@ get_quantiles_sim <- function(d_type, n, rrpi, q, distrib = "gamma", params) {
       
       
   all_ind <- data.frame(Case_no = seq(1, n, 1),
-                        distance = c(0,rlnorm(n-1, meanlog = meanlog, sdlog = sdlog)), # adding location of (0,0) for first dog
+                        #distance = c(0,rlnorm(n-1, meanlog = meanlog, sdlog = sdlog)), # adding location of (0,0) for first dog
+                        distance = rlnorm(n, meanlog = meanlog, sdlog = sdlog), # adding location of (0,0) for first dog
                         detected = runif(n, 0, 1) <= rrpi)
     }
   
   # work out the cumulative SI
   all_ind$cum = cumsum(all_ind$distance)
+  # now shift them down so that the rows match and the trans is from n to n+1
+  all_ind$cum[2:nrow(all_ind)] <- all_ind$cum[1:nrow(all_ind)-1]
+  all_ind[1,"cum"] <- 0
   
   #Extract the case numbers of those observed
   Observed_ind <- which(all_ind$detected)
@@ -97,8 +102,10 @@ get_quantiles_sim <- function(d_type, n, rrpi, q, distrib = "gamma", params) {
     ray_sig <- params[1] / sqrt(acos(-1)/2)
     
     all_ind <- data.frame(Case_no = seq(1, n, 1),
-                          x_rel = c(0,rnorm(n-1,mean = 0, sd = ray_sig)), # adding location of (0,0) for first dog
-                          y_rel = c(0,rnorm(n-1,mean = 0, sd = ray_sig)),
+                          #x_rel = c(0,rnorm(n-1,mean = 0, sd = ray_sig)), # adding location of (0,0) for first dog
+                          #y_rel = c(0,rnorm(n-1,mean = 0, sd = ray_sig)),
+                          x_rel = rnorm(n,mean = 0, sd = ray_sig), # adding location of (0,0) for first dog
+                          y_rel = rnorm(n,mean = 0, sd = ray_sig),
                           detected = runif(n, 0, 1) <= rrpi)
     
     # all distances
@@ -108,6 +115,11 @@ get_quantiles_sim <- function(d_type, n, rrpi, q, distrib = "gamma", params) {
     all_ind$x_abs = cumsum(all_ind$x_rel)
     all_ind$y_abs = cumsum(all_ind$y_rel)
     
+    all_ind$x_abs[2:nrow(all_ind)] <- all_ind$x_abs[1:nrow(all_ind)-1]
+    all_ind[1,"x_abs"] <- 0
+    
+    all_ind$y_abs[2:nrow(all_ind)] <- all_ind$y_abs[1:nrow(all_ind)-1]
+    all_ind[1,"y_abs"] <- 0
     
     #Extract the case numbers of those observed
     Observed_ind <- which(all_ind$detected)
