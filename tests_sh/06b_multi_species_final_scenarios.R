@@ -36,8 +36,9 @@ q <- 0.95 # set the level of the quantile we want to use later
 
 # generate the parameters for use within the simulation
 si_mean <- 27.8175438596491
-si_sd <- 26.8565433014125
-rayleigh_mean <- 0.88
+#si_sd <- 26.8565433014125
+si_sd <- 36.8565433014125
+rayleigh_mean <- 0.87
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
@@ -297,7 +298,7 @@ grep("3.1", colnames(trans_res_df))
 
 trans_res_df[,23]
 
-#This shows the column with the value of 3.1 has the lowest chi sqyared value
+#This shows the column with the value of 3.1 has the lowest chi squared value
 # We can extract this from our vimes results list. 
 # Need to know which of the results we want. This will correspond to the number in the shape_vect
 which(shape_vect == 3.1)
@@ -372,7 +373,7 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.position = c(0.8,0.7)) +
   ylim(0,60) + 
   xlim(1,8) +
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "A", y = "Number of clusters", x = "Size of cluster") 
 gg_res_1
 
 
@@ -466,7 +467,7 @@ gg_res_3.1 <- ggplot(csl_3.1, aes(x = total, y = n, fill = trans_type))  +
         legend.position = c(0.8,0.7)) +
   ylim(0,60) + 
   xlim(1,8) +
-  labs(title = "Degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "B", y = "Number of clusters", x = "Size of cluster") 
 gg_res_3.1
 
 #########################################################################################
@@ -485,14 +486,20 @@ plot(graph_3.1, vertex.label ="", vertex.size = 10,
 
 ##########
 ## put the two bar plots side by side.
-ggpubr::ggarrange(gg_res_1, gg_res_3.1, ncol = 2, common.legend = T, legend = "bottom")
+dev.off()
+ggpubr::ggarrange(gg_res_1, gg_res_3.1, ncol = 2, common.legend = T, legend = "bottom") %>%
+  ggpubr::ggexport(filename = "tests_sh/plots/gg2.pdf", width = 11, height = 6)
+
 
 ## and pop the igraphs side-by-side
+pdf("tests_sh/plots/i2.pdf", height = 5, width = 9)
 par(mfrow = c(1,2))
 set.seed(2)
-plot(graph_1, vertex.label ="", vertex.size = 10,
+plot(graph_1, vertex.label ="", vertex.size = 10, 
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
+title(main = "A", adj = 0)
 set.seed(2)
 plot(graph_3.1, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.1, "species")))])
-
+title(main = "B", adj = 0)
+dev.off()

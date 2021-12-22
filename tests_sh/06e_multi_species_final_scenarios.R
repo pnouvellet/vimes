@@ -38,8 +38,9 @@ q <- 0.95 # set the level of the quantile we want to use later
 
 # generate the parameters for use within the simulation
 si_mean <- 27.8175438596491
-si_sd <- 26.8565433014125
-rayleigh_mean <- 0.88
+#si_sd <- 26.8565433014125
+si_sd <- 36.8565433014125
+rayleigh_mean <- 0.87
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
@@ -291,17 +292,17 @@ plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi s
 
 colnames(trans_res_df)[apply(trans_res_df, 1, which.min)][12]
 
-grep("1.2", colnames(trans_res_df))
+grep("1.3", colnames(trans_res_df))
 
-trans_res_df[,4]
+trans_res_df[,5]
 
-#This shows the column with the value of 1.2 has the lowest chi sqyared value
+#This shows the column with the value of 1.3 has the lowest chi sqyared value
 # We can extract this from our vimes results list. 
 # Need to know which of the results we want. This will correspond to the number in the shape_vect
-which(shape_vect == 1.2)
+which(shape_vect == 1.3)
 
 par(mfrow = c(2,1))
-shape <- 1.2
+shape <- 1.3
 r <- rbeta(n = 1e4, shape1 = 1, shape2 = shape)
 hist(r, breaks = seq(0,1,by=.02), main = "Species 1", xlab = "", col = "red")
 
@@ -309,13 +310,13 @@ p <- rbeta(n = 1e4, shape1 = shape, shape2 = 1)
 hist(p, breaks = seq(0,1, by = 0.02), main = "Species 2", xlab = "", col ="blue")
 
 ###########################################################
-## Will now extract some results from the vimes results using the assortativity value at 1 and at 1.2
+## Will now extract some results from the vimes results using the assortativity value at 1 and at 1.3
 
 res_1 <- vimes_res_list[[1]]
 res_1$cutoff
 
-res_1.2 <- vimes_res_list[[3]]
-res_1.2$cutoff
+res_1.3 <- vimes_res_list[[4]]
+res_1.3$cutoff
 
 ### Results with shape = 1
 
@@ -371,7 +372,7 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.position = c(0.8,0.7)) +
   xlim(0,105) +
   ylim(0,30) +
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "A", y = "Number of clusters", x = "Size of cluster") 
 
 gg_res_1
 
@@ -413,42 +414,42 @@ plot(graph_1, vertex.label ="", vertex.size = 10,
 
 
 ###########################################
-## Repeat for the results with shape_2 = 1.2
+## Repeat for the results with shape_2 = 1.3
 
-table(res_1.2$clusters$size)  #tells us the the size of the assigned clusters
-res_1.2$clusters$K
+table(res_1.3$clusters$size)  #tells us the the size of the assigned clusters
+res_1.3$clusters$K
 
-range(res_1.2$clusters$size) #the range of cluster sizes
-#hist(res_1.2$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,9,1),
+range(res_1.3$clusters$size) #the range of cluster sizes
+#hist(res_1.3$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,9,1),
 #     main = "Histogram of cluster sizes")
 
-mean(res_1.2$clusters$size) # number of clusters including singletons
-98/549
+mean(res_1.3$clusters$size) # number of clusters including singletons
+86/549
 
 # The cluster membership can be joined with the SE_Tanz data to create a new data set. 
 
-res_1.2_df <- as.data.frame(res_1.2$clusters$membership) # This is the cluster that they are assigned to. 
-colnames(res_1.2_df) <- "cluster_memb"
+res_1.3_df <- as.data.frame(res_1.3$clusters$membership) # This is the cluster that they are assigned to. 
+colnames(res_1.3_df) <- "cluster_memb"
 
-cs_1.2 <- trans_table_fun(res_1.2_df)
+cs_1.3 <- trans_table_fun(res_1.3_df)
 
-csl_1.2 <- cs_1.2 %>%
+csl_1.3 <- cs_1.3 %>%
   group_by(total, trans_type)%>%
   count()
 
-csl_1.2_trios_up <- csl_1.2[which(csl_1.2$total >=3),]
+csl_1.3_trios_up <- csl_1.3[which(csl_1.3$total >=3),]
 
-sum(csl_1.2_trios_up$n) # so 24 clusters of >= 3 in total.
-sum(csl_1.2_trios_up[which(csl_1.2_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])
+sum(csl_1.3_trios_up$n) # so 24 clusters of >= 3 in total.
+sum(csl_1.3_trios_up[which(csl_1.3_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])
 
 # get the proportion
-sum(csl_1.2_trios_up[which(csl_1.2_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])/
-  sum(csl_1.2_trios_up$n) # so 24 clusters of >= 3 in total.
+sum(csl_1.3_trios_up[which(csl_1.3_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])/
+  sum(csl_1.3_trios_up$n) # so 24 clusters of >= 3 in total.
 
 # plot of the clusters
 
 
-gg_res_1.2 <- ggplot(csl_1.2, aes(x = total, y = n, fill = trans_type))  +
+gg_res_1.3 <- ggplot(csl_1.3, aes(x = total, y = n, fill = trans_type))  +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = own_cols, name = "Transmission type",
                     #guide = guide_legend(reverse=TRUE),
@@ -464,34 +465,41 @@ gg_res_1.2 <- ggplot(csl_1.2, aes(x = total, y = n, fill = trans_type))  +
         legend.position = c(0.8,0.7)) +
   xlim(0,105) +
   ylim(0,30) +
-  labs(title = "Degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "B", y = "Number of clusters", x = "Size of cluster") 
 
-gg_res_1.2
+gg_res_1.3
 
 #########################################################################################
 
 # create a subgraph of the i-graph 
 
-graph_1.2 <- res_1.2$graph
-graph_1.2 <- igraph::as_data_frame(graph_1.2)
-graph_1.2 <- igraph::graph_from_data_frame(graph_1.2, directed = F)
-rn <- as.numeric(get.vertex.attribute(graph_1.2)$name)
-graph_1.2 <-  igraph::set.vertex.attribute(graph_1.2, 'species', value = species_vect_graph[rn]) # assign the species to the graph 
+graph_1.3 <- res_1.3$graph
+graph_1.3 <- igraph::as_data_frame(graph_1.3)
+graph_1.3 <- igraph::graph_from_data_frame(graph_1.3, directed = F)
+rn <- as.numeric(get.vertex.attribute(graph_1.3)$name)
+graph_1.3 <-  igraph::set.vertex.attribute(graph_1.3, 'species', value = species_vect_graph[rn]) # assign the species to the graph 
 
-plot(graph_1.2, vertex.label ="", vertex.size = 10,
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1.2, "species")))])
+plot(graph_1.3, vertex.label ="", vertex.size = 10,
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1.3, "species")))])
 
 
 ##########
-## put the two bar plots side by side.
-ggpubr::ggarrange(gg_res_1, gg_res_1.2, ncol = 2, common.legend = T, legend = "bottom")
+dev.off()
+ggpubr::ggarrange(gg_res_1, gg_res_1.3, ncol = 2, common.legend = T, legend = "bottom") %>%
+  ggpubr::ggexport(filename = "tests_sh/plots/gg5.pdf", width = 11, height = 6)
 
+
+dev.off()
 ## and pop the igraphs side-by-side
+pdf("tests_sh/plots/i5.pdf", height = 5, width = 9)
 par(mfrow = c(1,2))
 set.seed(2)
-plot(graph_1, vertex.label ="", vertex.size = 10,
+plot(graph_1, vertex.label ="", vertex.size = 10, 
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
+title(main = "A", adj = 0)
 set.seed(2)
-plot(graph_1.2, vertex.label ="", vertex.size = 10,
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1.2, "species")))])
+plot(graph_1.3, vertex.label ="", vertex.size = 10,
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1.3, "species")))])
+title(main = "B", adj = 0)
+dev.off()
 

@@ -36,8 +36,9 @@ q <- 0.95 # set the level of the quantile we want to use later
 
 # generate the parameters for use within the simulation
 si_mean <- 27.8175438596491
-si_sd <- 26.8565433014125
-rayleigh_mean <- 0.88
+#si_sd <- 26.8565433014125
+si_sd <- 36.8565433014125
+rayleigh_mean <- 0.87
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
@@ -345,6 +346,7 @@ hist(res_1$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-
      main = "Histogram of cluster sizes")
 
 res_1$clusters$K # number of clusters including singletons
+mean(res_1$clusters$size)
 
 # The cluster membership can be joined with the SE_Tanz data to create a new data set. 
 
@@ -385,7 +387,7 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "A", position = "left", y = "Number of clusters", x = "Size of cluster") 
 
 
 
@@ -434,6 +436,10 @@ plot(graph_1, vertex.label ="", vertex.size = 10,
 table(res_3.5$clusters$size)  #tells us the the size of the assigned clusters
 res_3.5$clusters$K
 
+345/549
+
+mean(res_3.5$clusters$size)
+
 range(res_3.5$clusters$size) #the range of cluster sizes
 hist(res_3.5$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,9,1),
      main = "Histogram of cluster sizes")
@@ -477,8 +483,9 @@ gg_res_3.5 <- ggplot(csl_3.5, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  labs(title = "Degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "B", position = "left", y = "Number of clusters", x = "Size of cluster") 
 
+gg_res_3.5
 
 #########################################################################################
 
@@ -496,14 +503,25 @@ plot(graph_3.5, vertex.label ="", vertex.size = 10,
 
 ##########
 ## put the two bar plots side by side.
-ggpubr::ggarrange(gg_res_1, gg_res_3.5, ncol = 2, common.legend = T, legend = "bottom")
+dev.off()
+
+# pdf("tests_sh/plots/gg1.pdf", height = 4, width = 6, paper = "a4")
+# ggpubr::ggarrange(gg_res_1, gg_res_3.5, ncol = 2, common.legend = T, legend = "bottom")
+# dev.off()
+
+ggpubr::ggarrange(gg_res_1, gg_res_3.5, ncol = 2, common.legend = T, legend = "bottom") %>%
+  ggpubr::ggexport(filename = "tests_sh/plots/gg1.pdf", width = 8, height = 5)
+
 
 ## and pop the igraphs side-by-side
+pdf("tests_sh/plots/i1.pdf", height = 5, width = 9)
 par(mfrow = c(1,2))
 set.seed(2)
-plot(graph_1, vertex.label ="", vertex.size = 10,
+plot(graph_1, vertex.label ="", vertex.size = 10, 
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
+title(main = "A", adj = 0)
 set.seed(2)
 plot(graph_3.5, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.5, "species")))])
-
+title(main = "B", adj = 0)
+dev.off()

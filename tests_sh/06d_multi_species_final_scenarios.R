@@ -37,8 +37,9 @@ q <- 0.95 # set the level of the quantile we want to use later
 
 # generate the parameters for use within the simulation
 si_mean <- 27.8175438596491
-si_sd <- 26.8565433014125
-rayleigh_mean <- 0.88
+#si_sd <- 26.8565433014125
+si_sd <- 36.8565433014125
+rayleigh_mean <- 0.87
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
@@ -365,9 +366,9 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  xlim(0,130) +
+  xlim(0,80) +
   ylim(0,35) + 
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "", y = "Number of clusters", x = "Size of cluster") 
 
 gg_res_1
 
@@ -404,136 +405,19 @@ graph_1 <- igraph::graph_from_data_frame(graph_1, directed = F)
 rn <- as.numeric(get.vertex.attribute(graph_1)$name)
 graph_1 <-  igraph::set.vertex.attribute(graph_1, 'species', value = species_vect_graph[rn]) # assign the species to the graph 
 
+
+
+
 dev.off()
+pdf("tests_sh/plots/i4.pdf", height = 5, width = 9)
 plot(graph_1, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
-
-gg_res_1
-
-#############################
-###########################################################
-## Will now extract some results from the vimes results using the assortativity value at 3 just to see what happens
-res_3 <- vimes_res_list[[21]]
-res_3$cutoff
-
-### Results with shape = 3
-
-table(res_3$clusters$size)  #tells us the the size of the assigned clusters
-res_3$clusters$K
-mean(res_3$clusters$size)
-139/549
-
-range(res_3$clusters$size) #the range of cluster sizes
-#hist(res_3$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-3,9,3),
-#     main = "Histogram of cluster sizes")
-
-res_3$clusters$K # number of clusters including singletons
-res_3$cutoff
-# The cluster membership can be joined with the SE_Tanz data to create a new data set. 
-
-res_3_df <- as.data.frame(res_3$clusters$membership) # This is the cluster that they are assigned to. 
-colnames(res_3_df) <- "cluster_memb"
-
-source("tests_sh/trans_table_fun.R")
-cs_3 <- trans_table_fun(res_3_df)
-
-csl_3 <- cs_3 %>%
-  group_by(total, trans_type)%>%
-  count()
-
-csl_3_trios_up <- csl_3[which(csl_3$total >=3),]
-
-sum(csl_3_trios_up$n) # so 24 clusters of >= 3 in total.
-sum(csl_3_trios_up[which(csl_3_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])
-
-# get the proportion
-sum(csl_3_trios_up[which(csl_3_trios_up$trans_type %in% c("domestic_only", "wildlife_only")), "n"])/
-  sum(csl_3_trios_up$n) # so 24 clusters of >= 3 in total.
-
-# plot of the clusters
-own_cols <- c("red", "purple", "blue")
-own_labels <- c("Domestic only", "Mixed", "Wildlife only")
-
-gg_res_3 <- ggplot(csl_3, aes(x = total, y = n, fill = trans_type))  +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = own_cols, name = "Transmission type",
-                    #guide = guide_legend(reverse=TRUE),
-                    labels = own_labels) +
-  theme_classic() +
-  theme(axis.title.x = element_text(size=12, face="plain"),
-        axis.title.y = element_text(size=12, face="plain"),
-        axis.text.x  = element_text(size = 12, face = "plain"),
-        axis.text.y = element_text(size = 12, face = "plain"),
-        axis.ticks.length = unit(.2, "cm"),
-        legend.text = element_text(size = 12, face = "plain"),
-        legend.title = element_text(size = 12, face = "plain"),
-        legend.position = c(0.8,0.7)) +
-  xlim(0,130) +
-  ylim(0,35) + 
-  labs(title = "Degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
-
-gg_res_3
-
-
-#########################################################################################
-
-# create a subgraph of the i-graph 
-library(igraph)
-
-
-species_vect_graph <- vd$Species # get the species from the cases
-species_vect_graph <- droplevels(species_vect_graph)
-levels(species_vect_graph) 
-pal <- c("red", "blue", "red") # set a colour palette.Make sure the colours match the species from the species vector
-
-
-
-graph_3 <- res_3$graph
-graph_3 <- igraph::as_data_frame(graph_3)
-graph_3 <- igraph::graph_from_data_frame(graph_3, directed = F)
-rn <- as.numeric(get.vertex.attribute(graph_3)$name)
-graph_3 <-  igraph::set.vertex.attribute(graph_3, 'species', value = species_vect_graph[rn]) # assign the species to the graph 
-
 dev.off()
-plot(graph_3, vertex.label ="", vertex.size = 6, edge.width = 2, edge.color = "dark grey",
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3, "species")))])
 
-ggpubr::ggarrange(gg_res_1, gg_res_3, ncol = 2, common.legend = T, legend = "bottom")
+pdf("tests_sh/plots/gg4.pdf", width = 11, height = 6)
+gg_res_1
+dev.off()
 
-## and pop the igraphs side-by-side
-par(mfrow = c(1,2))
-set.seed(2)
-plot(graph_1, vertex.label ="", vertex.size = 8, edge.width = 2.5,
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
-set.seed(2)
-plot(graph_3, vertex.label ="", vertex.size = 8, edge.width = 2.5,
-     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3, "species")))])
-
-
-### plots for the thesis
-
-gg_res_scen_4 <-  ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = own_cols, name = "Transmission type",
-                    #guide = guide_legend(reverse=TRUE),
-                    labels = own_labels) +
-  theme_classic() +
-  theme(axis.title.x = element_text(size=12, face="plain"),
-        axis.title.y = element_text(size=12, face="plain"),
-        axis.text.x  = element_text(size = 12, face = "plain"),
-        axis.text.y = element_text(size = 12, face = "plain"),
-        axis.ticks.length = unit(.2, "cm"),
-        legend.text = element_text(size = 10, face = "plain"),
-        legend.title = element_text(size = 10, face = "plain"),
-        #legend.position = c(0.8,0.7)) +
-        legend.position = "bottom") +
-  xlim(0,65) +
-  ylim(0,35) + 
-  labs(title = "C", y = "Number of clusters", x = "Size of cluster") 
-
-gg_res_scen_4
-
-ggsave(here::here("tests_sh/plots", "cluster_size_barplot_C.pdf"), gg_res_scen_4, width = 6, height = 4)
 
 
 

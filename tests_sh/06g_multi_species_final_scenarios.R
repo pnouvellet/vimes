@@ -38,8 +38,9 @@ q <- 0.95 # set the level of the quantile we want to use later
 
 # generate the parameters for use within the simulation
 si_mean <- 27.8175438596491
-si_sd <- 26.8565433014125
-rayleigh_mean <- 0.88
+#si_sd <- 26.8565433014125
+si_sd <- 36.8565433014125
+rayleigh_mean <- 0.87
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
@@ -230,6 +231,8 @@ sim_props <- sim_props[which(sim_props$rowname %in% c("s1_props_mean", "mixed_pr
 sim_props$rowname <- as.character(sim_props$rowname)
 sim_props <- rename(sim_props, "trans_type" = "rowname")
 
+colnames(sim_props) <- colnames(trans_res_df)
+
 trans_res_df <- rbind(trans_res_df, sim_props)
 
 trans_res_df[8, 2:92] <- round(trans_res_df[which(trans_res_df$trans_type == "s1_props_mean"),2:92]*
@@ -280,9 +283,10 @@ range(trans_res_df[12, 2:92])
 plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi squared value",
      ylim = c(0,5))
 
-#write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_g.csv")
+write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_g.csv")
 range(trans_res_df[4,2:92])
 
+pchisq(1.841936, df = 1, lower.tail = F)
 
 #########################################################################
 
@@ -292,9 +296,9 @@ colnames(trans_res_df)[apply(trans_res_df, 1, which.min)][12]
 
 grep("2.4", colnames(trans_res_df))
 
-trans_res_df[,15]
+trans_res_df[,16]
 
-#This shows the column with the value of 2.4 has the lowest chi sqyared value
+#This shows the column with the value of 2.4 has the lowest chi squared value
 # We can extract this from our vimes results list. 
 # Need to know which of the results we want. This will correspond to the number in the shape_vect
 which(shape_vect == 2.4)
@@ -321,6 +325,8 @@ res_2.4$cutoff
 table(res_1$clusters$size)  #tells us the the size of the assigned clusters
 res_1$clusters$K
 mean(res_1$clusters$size)
+
+178/549
 
 range(res_1$clusters$size) #the range of cluster sizes
 hist(res_1$clusters$size, col = "pink", xlab = "Size of cluster", breaks = seq(-1,86,1),
@@ -368,9 +374,9 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  xlim(0,30) +
-  ylim(0,45) +
-  labs(title = "Random mixing", y = "Number of clusters", x = "Size of cluster") 
+  xlim(0,15) +
+  ylim(0,55) +
+  labs(title = "A", y = "Number of clusters", x = "Size of cluster") 
 
 gg_res_1
 
@@ -422,7 +428,7 @@ range(res_2.4$clusters$size) #the range of cluster sizes
 #     main = "Histogram of cluster sizes")
 
 mean(res_2.4$clusters$size) # number of clusters including singletons
-236/549
+176/549
 
 # The cluster membership can be joined with the SE_Tanz data to create a new data set. 
 
@@ -461,9 +467,9 @@ gg_res_2.4 <- ggplot(csl_2.4, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  xlim(0,30) +
-  ylim(0,45) +
-  labs(title = "Degree of assortative mixing", y = "Number of clusters", x = "Size of cluster") 
+  xlim(0,15) +
+  ylim(0,55) +
+  labs(title = "B", y = "Number of clusters", x = "Size of cluster") 
 
 gg_res_2.4
 
@@ -483,14 +489,21 @@ plot(graph_2.4, vertex.label ="", vertex.size = 10,
 
 ##########
 ## put the two bar plots side by side.
-ggpubr::ggarrange(gg_res_1, gg_res_2.4, ncol = 2, common.legend = T, legend = "bottom")
+dev.off()
+ggpubr::ggarrange(gg_res_1, gg_res_2.4, ncol = 2, common.legend = T, legend = "bottom") %>%
+  ggpubr::ggexport(filename = "tests_sh/plots/gg7.pdf", width = 11, height = 6)
 
+
+dev.off()
 ## and pop the igraphs side-by-side
+pdf("tests_sh/plots/i7.pdf", height = 5, width = 9)
 par(mfrow = c(1,2))
 set.seed(2)
-plot(graph_1, vertex.label ="", vertex.size = 8, edge.width = 2.5,
+plot(graph_1, vertex.label ="", vertex.size = 10, 
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
+title(main = "A", adj = 0)
 set.seed(2)
-plot(graph_2.4, vertex.label ="", vertex.size = 8, edge.width = 2.5,
+plot(graph_2.4, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_2.4, "species")))])
-
+title(main = "B", adj = 0)
+dev.off()
