@@ -503,3 +503,39 @@ plot(graph_3.1, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_3.1, "species")))])
 title(main = "B", adj = 0)
 dev.off()
+
+
+### Plot of the singletons
+singles_3.1 <- 
+  res_3.1_df %>% group_by(cluster_memb) %>%
+  dplyr::filter(n() == 1) %>%
+  ungroup()
+
+singles_3.1 <- unlist(singles_3.1$cluster_memb)
+
+vd_singles <- vd[singles_3.1,]
+
+# now need counts of singletons by each month
+
+singles_by_month <- vd_singles %>%
+  group_by(month_n) %>%
+  count()
+
+dev.off()
+
+plot(singles_by_month, ylim = c(0,20))
+
+g_dates <- c("2011", "2013", "2015", "2017", "2019")
+g_breaks <- c(0,24,48,72,96)
+
+dev.off()
+pdf("tests_sh/plots/singletons_scen2.pdf", height = 4, width = 5)
+ggplot(data = singles_by_month, aes(x = month_n, y = n)) + 
+  geom_point(col = "purple", size = 3) + 
+  theme_bw() + 
+  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,96)) + 
+  xlab("Date") + 
+  ylab("Number of singletons") + 
+  ggtitle("A")
+dev.off()
+ 

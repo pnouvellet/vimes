@@ -507,3 +507,136 @@ plot(graph_2.4, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_2.4, "species")))])
 title(main = "B", adj = 0)
 dev.off()
+
+
+## plots of singletons
+singles_2.4 <- 
+  res_2.4_df %>% group_by(cluster_memb) %>%
+  dplyr::filter(n() == 1) %>%
+  ungroup()
+
+singles_2.4 <- unlist(singles_2.4$cluster_memb)
+
+vd_singles <- vd[singles_2.4,]
+
+# now need counts of singletons by each month
+
+singles_by_month <- vd_singles %>%
+  group_by(month_n) %>%
+  count()
+
+dev.off()
+
+plot(singles_by_month, ylim = c(0,20))
+
+g_dates <- c("2011", "2013", "2015", "2017", "2019")
+g_breaks <- c(0,24,48,72,96)
+
+# figure to include
+dev.off()
+pdf("tests_sh/plots/singletons_scen7.pdf", height = 4, width = 5)
+ggplot(data = singles_by_month, aes(x = month_n, y = n)) + 
+  geom_point(col = "turquoise", size = 3) + 
+  theme_bw() + 
+  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,96)) + 
+  xlab("Date") + 
+  ylab("Number of singletons") + 
+  ggtitle("B") + 
+  ylim(0,16)
+
+dev.off()
+
+
+### clusters > 5 on a map
+
+## code to plot the clusters on a map
+## Start with all clusters of 2 or more. 
+library(rgdal)
+
+study_regs <- c("Mtwara", "Lindi")
+
+district_shp <- rgdal::readOGR("tests_sh/gis", "TZ_District_2012_pop") # Shape files for the districts of Tanzania
+#plot(district_shp)
+
+#study_dis <- district_shp[district_shp$Region_Nam %in% study_regs,]
+study_dis <- subset(district_shp, district_shp$Region_Nam %in% study_regs)
+#plot(study_dis)
+
+clusters_vect <-cs_2.4$cluster_memb
+class(clusters_vect)
+
+cluster_df <- cbind(SE_Tanz, res_2.4_df)
+colnames(cluster_df)
+cluster_df$cluster_memb <- as.factor(cluster_df$cluster_memb)
+
+cluster_df <- cluster_df[which(cluster_df$cluster_memb %in% clusters_vect),]
+
+# xy <- cluster_df[,c("Longitude", "Latitude")]
+# spdf <- SpatialPointsDataFrame(coords = xy, data = cluster_df,
+#                                proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+# levels(spdf$Species)
+# 
+# spdf$cluster_memb <- droplevels(spdf$cluster_memb)
+
+n_cols <-length(unique(spdf$cluster_memb)) # set how many colours we need if colouring by cluster
+
+# cols = c("red", "blue", "yellow") # use this if colouring by species
+# use below if colouring by cluster
+cols = colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(n_cols)
+
+#
+pts = c(17,19, 15) # setting these to use for species
+
+# plot(study_dis)
+# plot(spdf, add = T, pch = pts[spdf$Species], jitter = T, col = cols[spdf$cluster_memb]) #work out how to change point shape and colour by cluster.
+# 
+
+# And maybe a plot of the clusters of >=5
+
+clusters_vect_fivess <- unlist(cs_2.4[which(cs_1$total >4),"cluster_memb"])
+class(clusters_vect_fivess)
+
+cluster_df_fivess <- cluster_df[which(cluster_df$cluster_memb %in% clusters_vect_fivess),]
+
+xy_fives <- cluster_df_fivess[,c("Longitude", "Latitude")]
+spdf_fives <- SpatialPointsDataFrame(coords = xy_fives, data = cluster_df_fivess,
+                                     proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+levels(spdf_fives$Species)
+
+spdf_fives$Species <- droplevels(spdf_fives$Species)
+
+spdf_fives$cluster_memb <- droplevels(spdf_fives$cluster_memb)
+
+n_cols_fives <-length(unique(spdf_fives$cluster_memb)) # set how many colours we need if colouring by cluster
+
+ cols = c("red", "blue", "red") # use this if colouring by species
+# use below if colouring by cluster
+cols_fives = colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(n_cols_fives)
+cols_fives = colorRampPalette(RColorBrewer::brewer.pal(11, "Paired"))(n_cols_fives)
+
+#
+levels(spdf_fives$Species)
+pts = c(0,1, 0) # setting these to use for species
+
+#colouring by cluster
+plot(study_dis, col = "grey")
+plot(spdf_fives, add = T, pch = pts[spdf_fives$Species], jitter = T, cex = 1.5,
+     col = cols_fives[spdf_fives$cluster_memb]) #work out how to change point shape and colour by cluster.
+
+#colouring by species
+plot(study_dis, col = "azure2")
+plot(spdf_fives, add = T, jitter = T, cex = 1.2, pch = 15,
+     col = cols[spdf_fives$Species]) #work out how to change point shape and colour by cluster.
+
+
+### would be good to also plot locations of singletons
+
+singles_xy <- vd_singles[,c("Longitude", "Latitude")]
+singles_spdf <- SpatialPointsDataFrame(coords = singles_xy, data = vd_singles,
+                                       proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+
+#
+
+plot(study_dis, col = "azure")
+plot(singles_spdf, add = T, col = cols[singles_spdf$Species], jitter = T, pch = 15)#,
+
