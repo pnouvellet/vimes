@@ -400,3 +400,14 @@ plot(graph_1, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
 
 
+##save the plots
+
+dev.off()
+pdf("tests_sh/plots/i8.pdf", height = 5, width = 9)
+plot(graph_1, vertex.label ="", vertex.size = 10,
+     vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
+dev.off()
+
+pdf("tests_sh/plots/gg8.pdf", width = 11, height = 6)
+gg_res_1
+dev.off()

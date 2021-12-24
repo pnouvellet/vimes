@@ -624,7 +624,7 @@ plot(spdf_fives, add = T, pch = pts[spdf_fives$Species], jitter = T, cex = 1.5,
      col = cols_fives[spdf_fives$cluster_memb]) #work out how to change point shape and colour by cluster.
 
 #colouring by species
-plot(study_dis, col = "azure2")
+plot(study_dis, col = "beige")
 plot(spdf_fives, add = T, jitter = T, cex = 1.2, pch = 15,
      col = cols[spdf_fives$Species]) #work out how to change point shape and colour by cluster.
 
@@ -637,6 +637,14 @@ singles_spdf <- SpatialPointsDataFrame(coords = singles_xy, data = vd_singles,
 
 #
 
-plot(study_dis, col = "azure")
-plot(singles_spdf, add = T, col = cols[singles_spdf$Species], jitter = T, pch = 15)#,
+dev.off()
+pdf("tests_sh/plots/map_scen7.pdf", width = 5, height =5)
+par(mar = c(1,1,1,1))
+plot(study_dis, col = "beige")
+plot(singles_spdf, add = T, col = cols[singles_spdf$Species], jitter = T, pch = 15, cex = 0.5)#,
+title(main = "B", adj = 0.1)
+dev.off()
+
+table(vd_singles$Species)
+
 

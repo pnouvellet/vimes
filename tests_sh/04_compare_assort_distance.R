@@ -32,8 +32,8 @@ q <- 0.95 # set the level of the quantile we want to use later
 
 # generate the parameters for use within the simulation
 si_mean <- 27.8175438596491
-si_sd <- 26.8565433014125
-rayleigh_mean <- 0.88
+si_sd <- 36.8565433014125
+rayleigh_mean <- 0.87
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
@@ -126,7 +126,7 @@ for(i in 1:length(shape_vect)){
 }
 
 
-#write.csv(sp_res_df, "tests_sh/effect_of_params_on cut_offs/exp_assort_spatial_rp1_2mean.csv")
+#write.csv(sp_res_df, "tests_sh/effect_of_params_on cut_offs/exp_assort_spatial_rp1_5mean.csv")
 
 ### Next scenario
 ### Going to look at different reporting rates.
