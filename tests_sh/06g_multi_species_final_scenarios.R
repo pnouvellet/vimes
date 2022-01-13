@@ -283,7 +283,7 @@ range(trans_res_df[12, 2:92])
 plot(shape_vect, trans_res_df[12,2:92], xlab = "Value of shape 2", ylab = "Chi squared value",
      ylim = c(0,5))
 
-write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_g.csv")
+#write.csv(trans_res_df, "tests_sh/trans_res_dfs/trans_res_g.csv")
 range(trans_res_df[4,2:92])
 
 pchisq(1.841936, df = 1, lower.tail = F)
@@ -374,9 +374,11 @@ gg_res_1 <- ggplot(csl_1, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  xlim(0,15) +
+  #xlim(1,14) +
+  scale_x_continuous( breaks = c(2,4,6,8,10,12,14), labels =c("2","4","6","8","10","12","14"),
+                    limits = c(1,15)) +
   ylim(0,55) +
-  labs(title = "A", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "C", y = "Number of clusters", x = "Size of cluster") 
 
 gg_res_1
 
@@ -467,9 +469,11 @@ gg_res_2.4 <- ggplot(csl_2.4, aes(x = total, y = n, fill = trans_type))  +
         legend.text = element_text(size = 12, face = "plain"),
         legend.title = element_text(size = 12, face = "plain"),
         legend.position = c(0.8,0.7)) +
-  xlim(0,15) +
+  #xlim(0,15) +
+  scale_x_continuous( breaks = c(2,4,6,8,10,12,14), labels =c("2","4","6","8","10","12","14"),
+                      limits = c(1,15)) +
   ylim(0,55) +
-  labs(title = "B", y = "Number of clusters", x = "Size of cluster") 
+  labs(title = "D", y = "Number of clusters", x = "Size of cluster") 
 
 gg_res_2.4
 
@@ -501,11 +505,11 @@ par(mfrow = c(1,2))
 set.seed(2)
 plot(graph_1, vertex.label ="", vertex.size = 10, 
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_1, "species")))])
-title(main = "A", adj = 0)
+title(main = "C", adj = 0)
 set.seed(2)
 plot(graph_2.4, vertex.label ="", vertex.size = 10,
      vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(graph_2.4, "species")))])
-title(main = "B", adj = 0)
+title(main = "D", adj = 0)
 dev.off()
 
 
@@ -518,12 +522,21 @@ singles_2.4 <-
 singles_2.4 <- unlist(singles_2.4$cluster_memb)
 
 vd_singles <- vd[singles_2.4,]
+table(vd_singles$Species)
 
 # now need counts of singletons by each month
 
 singles_by_month <- vd_singles %>%
   group_by(month_n) %>%
   count()
+
+# want to include all the months - even those with no singles
+
+months_to_join <- as.data.frame(seq(0,102,1))
+colnames(months_to_join) <- "month_n"
+
+singles_by_month <- left_join(months_to_join, singles_by_month)
+singles_by_month[is.na(singles_by_month$n), "n"] <- 0
 
 dev.off()
 
@@ -538,13 +551,93 @@ pdf("tests_sh/plots/singletons_scen7.pdf", height = 4, width = 5)
 ggplot(data = singles_by_month, aes(x = month_n, y = n)) + 
   geom_point(col = "turquoise", size = 3) + 
   theme_bw() + 
-  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,96)) + 
+  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,102)) + 
   xlab("Date") + 
-  ylab("Number of singletons") + 
+  ylab("Monthly number of singletons") + 
   ggtitle("B") + 
   ylim(0,16)
 
 dev.off()
+
+
+## We wanta plot showing the proportion of cases detected each month that were singletons. 
+
+# To do this we need a monthly count of cases
+
+monthly_case_counts <- vd %>%
+  group_by(month_n) %>%
+  count()
+
+# use the previously made months to join data frame
+
+monthly_case_counts <- left_join(months_to_join, monthly_case_counts)
+colnames(monthly_case_counts) <- c("month_n", "monthly_cases")
+colnames(singles_by_month) <- c("month_n", "single_cases")
+
+# now join with the singles
+
+monthly_props_of_singles <- left_join(monthly_case_counts, singles_by_month)
+
+monthly_props_of_singles[is.na(monthly_props_of_singles$monthly_cases), "monthly_cases"] <- 0
+
+monthly_props_of_singles$prop_singles <- monthly_props_of_singles$single_cases/monthly_props_of_singles$monthly_cases
+
+
+plot(monthly_props_of_singles$month_n, monthly_props_of_singles$prop_singles)
+
+dev.off()
+pdf("tests_sh/plots/proportion_singletons_scen7.pdf", height = 4, width = 5)
+ggplot(data = monthly_props_of_singles, aes(x = month_n, y = prop_singles)) + 
+  geom_point(col = "turquoise", size = 3, shape = 15) + 
+  theme_bw() + 
+  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,102)) + 
+  xlab("Date") + 
+  ylab("Proportion of monthly cases that were singletons") + 
+  ggtitle("D") + 
+  ylim(0,1)
+dev.off()
+
+### Now we want a plot of the monthly cases so that we can compare the proportions to those.
+
+table(vd$Species)
+
+vd$Species <- dplyr::recode_factor(vd$Species, "Dog" = "Domestic", "Cat" = "Domestic")
+table(vd$Species)
+
+species_counts <- vd %>% group_by(month_n, Species) %>%
+  count()
+
+
+levels(species_counts$Species)
+levels(species_counts$Species) <- droplevels(species_counts$Species)
+levels(species_counts$Species)
+
+own_cols <- c("red", "blue")
+yr_breaks <- c(0,12,24,36,48,60,72,84,96)
+date_labs <- c("2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019")
+
+dev.off()
+pdf("tests_sh/plots/monthly_cases_bar.pdf", height = 4, width = 10)
+ggplot(species_counts, aes(x = month_n, y = n, fill = Species))  +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = own_cols, name = "Species",
+                    labels = c("Domestic", "Wildlife")) +
+  theme_classic() +
+  theme(axis.title.x = element_text(size=16, face="plain"),
+        axis.title.y = element_text(size=16, face="plain"),
+        axis.text.x  = element_text(size = 16, face = "plain"),
+        axis.text.y = element_text(size = 16, face = "plain"),
+        axis.ticks.length = unit(.2, "cm"),
+        legend.text = element_text(size = 16, face = "plain"),
+        legend.title = element_text(size = 18, face = "plain"),
+        legend.position = c(0.9,0.7)) +
+  labs(title = "", y = "Monthly number of cases", x = "Date") +
+  scale_x_continuous(labels = date_labs, breaks = yr_breaks) +
+  ggtitle("E")
+dev.off()
+
+
+
 
 
 ### clusters > 5 on a map

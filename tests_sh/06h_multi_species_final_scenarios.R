@@ -131,8 +131,8 @@ for(i in 1:length(shape_vect)){
 #write.csv(dist_res_df, "tests_sh/final_scenarios/dist_95_0.25_0.10_1_100_5mean.csv")
 
 
-si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.25_0.10_1_100_5mean.csv")
-dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.25_0.10_1_100_5mean.csv")
+#si_res_df <- read.csv("tests_sh/final_scenarios/si_95_0.25_0.10_1_100_5mean.csv")
+#dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.25_0.10_1_100_5mean.csv")
 
 # Now need to run vimes for each of the cut-off values 
 # To do this we need to cuts to be vectors within a list within a list. 

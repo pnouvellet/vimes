@@ -137,6 +137,10 @@ dist_res_df <- read.csv("tests_sh/final_scenarios/dist_95_0.5_0.25_1_10.csv")
 si_cut_df <- si_res_df[,c("s1_cut", "mix_cut", "s2_cut")]
 dist_cut_df <- dist_res_df[,c("s1_cut", "mix_cut", "s2_cut")]
 
+si_cut_df <- si_res_df[,c("s1_cut_si", "mix_cut_si", "s2_cut_si")]
+dist_cut_df <- dist_res_df[,c("s1_cut_dist", "mix_cut_dist", "s2_cut_dist")]
+
+
 si_cuts_list <- as.list(as.data.frame(t(si_cut_df)))
 dist_cuts_list <- as.list(as.data.frame(t(dist_cut_df)))
 
@@ -207,9 +211,13 @@ trans_res_df[4,1] <- "total"
 trans_res_df[4,2:92] <- colSums(trans_res_df[1:3, 2:92])
 
 
+colnames(si_res_df)
+colnames(dist_res_df)
 ### Now get the proportions from the simulations
-colnames(si_res_df) <- paste(colnames(si_res_df), "si", sep = "_")
-colnames(dist_res_df) <- paste(colnames(dist_res_df), "dist", sep = "_")
+#colnames(si_res_df) <- paste(colnames(si_res_df), "si", sep = "_")
+#colnames(dist_res_df) <- paste(colnames(dist_res_df), "dist", sep = "_")
+
+
 
 sim_props <- si_res_df %>% 
   cbind(dist_res_df) %>%
@@ -514,12 +522,24 @@ singles_3.1 <-
 singles_3.1 <- unlist(singles_3.1$cluster_memb)
 
 vd_singles <- vd[singles_3.1,]
+table(vd_singles$Species)
 
 # now need counts of singletons by each month
 
 singles_by_month <- vd_singles %>%
   group_by(month_n) %>%
   count()
+
+# This count only includes months wehre there are singles. We want to include all months even if no singles. 
+# Data are from Jan 2011 - July 2019 which is 103 months. But month n starts at 0 in singles so 
+# use 0-102
+
+
+months_to_join <- as.data.frame(seq(0,102,1))
+colnames(months_to_join) <- "month_n"
+
+singles_by_month <- left_join(months_to_join, singles_by_month)
+singles_by_month[is.na(singles_by_month$n), "n"] <- 0
 
 dev.off()
 
@@ -533,13 +553,56 @@ pdf("tests_sh/plots/singletons_scen2.pdf", height = 4, width = 5)
 ggplot(data = singles_by_month, aes(x = month_n, y = n)) + 
   geom_point(col = "orange", size = 3) + 
   theme_bw() + 
-  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,96)) + 
+  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,102)) + 
   xlab("Date") + 
-  ylab("Number of singletons") + 
+  ylab("Monthly number of singletons") + 
   ggtitle("A") +
   ylim(0,16)
 dev.off()
  
+
+## We wanta plot showing the proportion of cases detected each month that were singletons. 
+
+# To do this we need a monthly count of cases
+
+monthly_case_counts <- vd %>%
+  group_by(month_n) %>%
+  count()
+
+
+# use the previously made months to join data frame
+
+monthly_case_counts <- left_join(months_to_join, monthly_case_counts)
+colnames(monthly_case_counts) <- c("month_n", "monthly_cases")
+colnames(singles_by_month) <- c("month_n", "single_cases")
+
+# now join with the singles
+
+monthly_props_of_singles <- left_join(monthly_case_counts, singles_by_month)
+
+monthly_props_of_singles[is.na(monthly_props_of_singles$monthly_cases), "monthly_cases"] <- 0
+
+monthly_props_of_singles$prop_singles <- monthly_props_of_singles$single_cases/monthly_props_of_singles$monthly_cases
+
+#quick check
+sum(monthly_props_of_singles$monthly_cases)
+
+plot(monthly_props_of_singles$month_n, monthly_props_of_singles$prop_singles)
+
+dev.off()
+pdf("tests_sh/plots/proportion_singletons_scen2.pdf", height = 4, width = 5)
+ggplot(data = monthly_props_of_singles, aes(x = month_n, y = prop_singles)) + 
+  geom_point(col = "orange", size = 3, shape = 15) + 
+  theme_bw() + 
+  scale_x_continuous(breaks = g_breaks, labels = g_dates, limits = c(0,102)) + 
+  xlab("Date") + 
+  ylab("Proportion of monthly cases that were singletons") + 
+  ggtitle("C") + 
+  ylim(0,1)
+dev.off()
+
+
+
 
 ### clusters and singletons on a map
 
