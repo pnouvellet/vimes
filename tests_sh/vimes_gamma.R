@@ -99,13 +99,13 @@ plot(f_spatial, xlim = c(0,5))
 pi <- 1.0
 ## quantiles
 q <- c(.50, .75, .90, .95, .99)
-
+q <- c(0.75, 0.95, 0.99)
 ## colours used to plot these
 cols <- rainbow(length(q))
 # We now plot the distributions of expected distances (temporal, spatial) between a case and their closest observed ancestor, assuming that only pi% of cases are reported. We also show the cutoffs corresponding to the quantiles defined above.
 
 par(mfrow=c(2,1))
-plot(f_temporal, q, xlim = c(0,365), pi = pi,
+plot(f_temporal, q, xlim = c(0,200), pi = pi,
      lines_arg = list(col=cols, lwd=2))
 plot(f_spatial, q, xlim = c(0,15), pi = pi,
      lines_arg = list(col=cols, lwd=2))

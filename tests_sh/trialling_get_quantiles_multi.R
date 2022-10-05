@@ -6,10 +6,10 @@ s1_obs <- 303 # no of cases observed for dogs/species 1
 s2_obs <- 221 # no of cases observed for jackals/species 2
 
 ## Specify the reporting rates of the different species. 
-s1_rr <- 0.60 # rr for dogs/species 1
-s2_rr <- 0.60 # rr for jackals/species 2
+s1_rr <- 1 #0.60 # rr for dogs/species 1
+s2_rr <- 1 #  0.60 # rr for jackals/species 2
 
-n = 100000 # set number of simulations
+n = 1000 # set number of simulations
 
 q <- 0.95 # set the level of the quantile we want to use later
 
@@ -23,14 +23,14 @@ rayleigh_mean <- 0.88
 
 params_s1s1 <- c(si_mean, si_sd)
 params_s1s2 <- c(si_mean, si_sd)
-params_s2s1 <- c(si_mean, si_sd)
-params_s2s2 <- c(si_mean, si_sd)
+#params_s2s1 <- c(si_mean, si_sd)
+params_s2s2 <- c(si_mean*2, si_sd)
 
 
-#params_s1s1 <- c(rayleigh_mean)
+params_s1s1 <- c(rayleigh_mean)
 #params_s1s2 <- c(rayleigh_mean)
-#params_s2s1 <- c(rayleigh_mean)
-#params_s2s2 <- c(rayleigh_mean)
+params_s2s1 <- c(rayleigh_mean)
+params_s2s2 <- c(rayleigh_mean*20)
 
 
 ## Should I set the first animals as zero? Meed to look at that
@@ -44,9 +44,10 @@ source("R/get_quantiles_multi.R")
 tictoc::tic()
 out_si_gamma <- get_quantiles_multi(d_type = "temporal", distrib = "gamma", 
                                     s1_obs = s1_obs, s2_obs = s2_obs,
-                                    s1_rr = 0.4, s2_rr = 0.4,
+                                    s1_rr = 0.6, s2_rr = 0.4,
                                     params_s1s1 = c(si_mean, si_sd), params_s1s2 = c(si_mean, si_sd),
-                                    params_s2s1 = c(si_mean, si_sd), params_s2s2 = c(si_mean, si_sd),
+                                    #params_s2s1 = c(si_mean, si_sd), 
+                                    params_s2s2 = c(si_mean, si_sd),
                                     n = 1000000, q = 0.95)
 
 tictoc::toc()
@@ -54,7 +55,7 @@ tictoc::toc()
 
 out_si_gamma$prop_s1s1
 out_si_gamma$prop_s1s2
-out_si_gamma$prop_s2s1
+#out_si_gamma$prop_s2s1
 out_si_gamma$prop_s2s2
 
 out_si_gamma$prop_s1s1_below_quant
@@ -94,7 +95,7 @@ rownames(s1_props_table_bq) <- rownames(s1s2_props_table_bq) <-
   rownames(s2s1_props_table_bq) <- rownames(s2_props_table_bq) <-  rr_s2_vect
 
 
-q <- 0.99
+q <- 0.95
 
 tictoc::tic()
 for (i in 1:length(rr_s1_vect)) {

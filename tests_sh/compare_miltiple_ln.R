@@ -11,7 +11,7 @@ library(dplyr)
 
 # Read in the vimes results.
 #vimes_ln <- read.csv("tests_sh/vimes_si_ln.csv", row.names = 1, check.names = F)
-vimes_ln <- read.csv("tests_sh/vimes_si_ln_imp_alpha.csv", row.names = 1, check.names = F)
+vimes_ln <- read.csv("tests_sh/vimes_cutoffs/vimes_si_ln_imp_alpha.csv", row.names = 1, check.names = F)
 
 # Bring in the data we are going to use for the simulations
 
@@ -174,6 +174,7 @@ write.csv(IQR75_100k_ln, "tests_sh/comp_ln_100k_IQR75.csv")
 
 ####################### Compare for 1 million
 
+n = 1000000
 tabs_list_1m <- list()
 
 

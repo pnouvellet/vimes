@@ -34,6 +34,7 @@ q <- 0.95 # set the level of the quantile we want to use later
 si_mean <- 27.8175438596491
 si_sd <- 36.8565433014125
 rayleigh_mean <- 0.87
+rayleigh_mean <- 870
 
 ## have the option to use different parameters for the different type of transmission
 ## Below we are using all the same
